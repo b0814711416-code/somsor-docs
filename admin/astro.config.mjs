@@ -1,11 +1,9 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 
 export default defineConfig({
-  output: 'server',      // SSR — ต้องการ server เพื่อรัน API routes และ auth
-  adapter: node({        // Vercel รองรับ Node.js adapter
-    mode: 'standalone',
-  }),
+  output: 'server',
+  adapter: vercel(),
   integrations: [tailwind()],
 });
