@@ -1,0 +1,62 @@
+---
+// DocumentLink.astro — ปุ่มลิงก์เอกสารแต่ละรายการ
+interface Props {
+  title: string;
+  url: string;
+  academic_year: string;
+  doc_type: string;
+}
+
+const { title, url, academic_year, doc_type } = Astro.props;
+
+// กำหนดสีตามประเภทเอกสาร
+const typeColorMap: Record<string, string> = {
+  'รายงาน':    'bg-blue-50 text-blue-700 border-blue-200',
+  'แผน':       'bg-green-50 text-green-700 border-green-200',
+  'คำสั่ง':    'bg-orange-50 text-orange-700 border-orange-200',
+  'ภาพถ่าย':   'bg-purple-50 text-purple-700 border-purple-200',
+  'สถิติ':     'bg-teal-50 text-teal-700 border-teal-200',
+  'สรุป':      'bg-yellow-50 text-yellow-700 border-yellow-200',
+  'นวัตกรรม':  'bg-pink-50 text-pink-700 border-pink-200',
+};
+const typeColor = typeColorMap[doc_type] || 'bg-gray-50 text-gray-700 border-gray-200';
+---
+
+<a
+  href={url}
+  target="_blank"
+  rel="noopener noreferrer"
+  class="group flex items-start gap-3 p-3 rounded-lg border border-gray-200 bg-white
+         hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm transition-all duration-150"
+>
+  <!-- ไอคอน Google Drive -->
+  <div class="mt-0.5 flex-shrink-0 w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center
+              group-hover:bg-blue-200 transition-colors">
+    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+    </svg>
+  </div>
+
+  <!-- ชื่อเอกสาร + badge -->
+  <div class="flex-1 min-w-0">
+    <p class="text-sm font-medium text-gray-800 group-hover:text-blue-700 leading-snug">
+      {title}
+    </p>
+    <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+      <!-- ประเภทเอกสาร -->
+      <span class={`text-xs px-2 py-0.5 rounded-full border font-medium ${typeColor}`}>
+        {doc_type}
+      </span>
+      <!-- ปีการศึกษา -->
+      <span class="text-xs text-gray-400">ปีการศึกษา {academic_year}</span>
+    </div>
+  </div>
+
+  <!-- ลูกศรชี้ออก -->
+  <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-400 flex-shrink-0 mt-1 transition-colors"
+       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5l7 7-7 7"/>
+  </svg>
+</a>

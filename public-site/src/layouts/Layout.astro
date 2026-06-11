@@ -1,0 +1,106 @@
+---
+// Layout.astro — โครงสร้างหน้าเว็บทุกหน้า
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'ระบบเอกสารหลักฐาน สมศ. รอบห้า',
+  description = 'ระบบจัดเก็บและแสดงผลลิงก์เอกสารหลักฐานเพื่อรับการประเมินภายนอก สมศ. รอบห้า'
+} = Astro.props;
+
+// อ่านชื่อโรงเรียนจาก environment variable (ตั้งค่าใน .env หรือ GitHub Secrets)
+const schoolName = import.meta.env.SCHOOL_NAME || 'โรงเรียนของท่าน';
+const schoolSubtitle = import.meta.env.SCHOOL_SUBTITLE || 'สำนักงานเขตพื้นที่การศึกษา';
+const BASE = import.meta.env.BASE_URL;
+---
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+
+  <!-- Google Fonts: Sarabun (ฟอนต์ภาษาไทย สะอาด อ่านง่าย) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- ป้องกัน indexing — ไม่ต้องการให้ Google index หน้านี้ -->
+  <meta name="robots" content="noindex, nofollow" />
+</head>
+
+<body class="min-h-screen bg-gray-50 font-sans antialiased">
+
+  <!-- ===== HEADER ===== -->
+  <header class="bg-blue-900 text-white shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+      <div class="flex items-center gap-4">
+        <!-- Logo / Seal placeholder -->
+        <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
+          🏫
+        </div>
+        <div>
+          <h1 class="text-lg font-bold leading-tight">{schoolName}</h1>
+          <p class="text-blue-200 text-sm">{schoolSubtitle}</p>
+          <div class="mt-1 flex items-center gap-2">
+            <span class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-0.5 rounded-full">
+              สมศ. รอบห้า
+            </span>
+            <span class="text-blue-300 text-xs">ระบบเอกสารหลักฐานการประเมินภายนอก</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-blue-800 border-t border-blue-700">
+      <div class="max-w-6xl mx-auto px-4">
+        <ul class="flex gap-1 overflow-x-auto">
+          <li>
+            <a href={BASE + '/'}
+               class="inline-block px-4 py-2.5 text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-700 rounded-t transition-colors whitespace-nowrap">
+              🏠 ภาพรวม
+            </a>
+          </li>
+          <li>
+            <a href={BASE + '/standard/1'}
+               class="inline-block px-4 py-2.5 text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-700 rounded-t transition-colors whitespace-nowrap">
+              มาตรฐานที่ 1
+            </a>
+          </li>
+          <li>
+            <a href={BASE + '/standard/2'}
+               class="inline-block px-4 py-2.5 text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-700 rounded-t transition-colors whitespace-nowrap">
+              มาตรฐานที่ 2
+            </a>
+          </li>
+          <li>
+            <a href={BASE + '/standard/3'}
+               class="inline-block px-4 py-2.5 text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-700 rounded-t transition-colors whitespace-nowrap">
+              มาตรฐานที่ 3
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <slot />
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="mt-16 bg-gray-800 text-gray-400 text-center py-6 text-sm">
+    <p>{schoolName} • ระบบเอกสารหลักฐาน สมศ. รอบห้า</p>
+    <p class="text-xs mt-1 text-gray-500">
+      อัปเดตล่าสุด: <span id="build-date">{new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+    </p>
+  </footer>
+
+</body>
+</html>

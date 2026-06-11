@@ -1,0 +1,176 @@
+---
+/**
+ * หน้าแก้ไขเอกสาร — /documents/[id]/edit
+ */
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDocumentById, getAllIndicators } from '../../../lib/db';
+
+const id = Number(Astro.params.id);
+const [doc, indicators] = await Promise.all([
+  getDocumentById(id),
+  getAllIndicators(),
+]);
+
+if (!doc) return Astro.redirect('/documents');
+
+const grouped = indicators.reduce((acc, ind) => {
+  const key = ind.standard_name ?? 'อื่นๆ';
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(ind);
+  return acc;
+}, {} as Record<string, typeof indicators>);
+
+const DOC_TYPES = ['รายงาน', 'แผน', 'คำสั่ง', 'ภาพถ่าย', 'สถิติ', 'สรุป', 'นวัตกรรม', 'เอกสาร'];
+const currentYear = new Date().getFullYear() + 543;
+const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
+---
+
+<AdminLayout title="แก้ไขเอกสาร" activeMenu="documents">
+
+  <div class="max-w-2xl">
+    <a href="/documents" class="flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 mb-6 transition-colors">
+      ← กลับรายการเอกสาร
+    </a>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h2 class="text-lg font-bold text-gray-800 mb-6">แก้ไขเอกสาร #{doc.id}</h2>
+
+      <div id="successMsg" class="hidden mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+        <p class="text-sm text-green-700">✅ อัปเดตเรียบร้อยแล้ว!</p>
+      </div>
+      <div id="errorMsg" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+        <p class="text-sm text-red-600" id="errorText"></p>
+      </div>
+
+      <form id="editForm" class="space-y-5">
+        <!-- ตัวบ่งชี้ -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">ตัวบ่งชี้ <span class="text-red-500">*</span></label>
+          <select name="indicator_id" required
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            {Object.entries(grouped).map(([stdName, inds]) => (
+              <optgroup label={stdName}>
+                {inds.map(ind => (
+                  <option value={ind.id} selected={ind.id === doc.indicator_id}>
+                    {ind.code}: {ind.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+
+        <!-- ชื่อ -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อเอกสาร <span class="text-red-500">*</span></label>
+          <input type="text" name="title" required value={doc.title}
+                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <!-- URL -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">ลิงก์ Google Drive <span class="text-red-500">*</span></label>
+          <input type="url" name="url" required value={doc.url}
+                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          <a href={doc.url} target="_blank" class="text-xs text-blue-500 hover:underline mt-1 inline-block">
+            ดูเอกสารปัจจุบัน ↗
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทเอกสาร</label>
+            <select name="doc_type"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              {DOC_TYPES.map(t => <option value={t} selected={t === doc.doc_type}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ปีการศึกษา</label>
+            <select name="academic_year"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              {years.map(y => <option value={y} selected={y === doc.academic_year}>{y}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">ลำดับการแสดงผล</label>
+            <input type="number" name="sort_order" value={doc.sort_order} min="0"
+                   class="w-32 px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะ</label>
+            <label class="flex items-center gap-2 cursor-pointer mt-2.5">
+              <input type="checkbox" name="is_active" value="1" checked={doc.is_active}
+                     class="w-4 h-4 rounded text-blue-600"/>
+              <span class="text-sm text-gray-700">แสดงบนเว็บไซต์</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit" id="submitBtn"
+                  class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60">
+            บันทึกการแก้ไข
+          </button>
+          <a href="/documents"
+             class="px-6 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors text-center">
+            ยกเลิก
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script define:vars={{ docId: doc.id }}>
+    const form       = document.getElementById('editForm');
+    const submitBtn  = document.getElementById('submitBtn');
+    const successMsg = document.getElementById('successMsg');
+    const errorMsg   = document.getElementById('errorMsg');
+    const errorText  = document.getElementById('errorText');
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'กำลังบันทึก...';
+      successMsg.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+
+      const fd = new FormData(form);
+      const data = {
+        indicator_id:  Number(fd.get('indicator_id')),
+        title:         fd.get('title'),
+        url:           fd.get('url'),
+        doc_type:      fd.get('doc_type'),
+        academic_year: fd.get('academic_year'),
+        sort_order:    Number(fd.get('sort_order')) || 0,
+        is_active:     fd.get('is_active') === '1',
+      };
+
+      try {
+        const res  = await fetch(`/api/documents/${docId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+
+        if (res.ok) {
+          successMsg.classList.remove('hidden');
+          successMsg.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          errorText.textContent = json.error || 'เกิดข้อผิดพลาด';
+          errorMsg.classList.remove('hidden');
+        }
+      } catch {
+        errorText.textContent = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+        errorMsg.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'บันทึกการแก้ไข';
+      }
+    });
+  </script>
+</AdminLayout>

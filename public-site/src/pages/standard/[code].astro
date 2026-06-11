@@ -1,0 +1,131 @@
+---
+/**
+ * [code].astro — หน้ารายละเอียดมาตรฐาน
+ * Dynamic route: /standard/1, /standard/2, /standard/3
+ * Astro จะ pre-render ทุก code ผ่าน getStaticPaths() ตอน build
+ */
+import Layout from '../../layouts/Layout.astro';
+import IndicatorSection from '../../components/IndicatorSection.astro';
+import { getAllStandardCodes, getStandardByCode } from '../../lib/db';
+
+// ---- getStaticPaths: บอก Astro ว่ามี path อะไรบ้าง ----
+export async function getStaticPaths() {
+  const codes = await getAllStandardCodes();
+  return codes.map(code => ({ params: { code } }));
+}
+
+// ---- ดึงข้อมูลมาตรฐานตาม code ----
+const { code } = Astro.params;
+const standard = await getStandardByCode(code);
+
+// กรณีไม่พบ (ไม่ควรเกิดถ้า getStaticPaths ถูกต้อง)
+if (!standard) {
+  return Astro.redirect('/');
+}
+
+const BASE = import.meta.env.BASE_URL;
+
+// นับจำนวนเอกสารรวม
+const totalDocs = standard.indicators.reduce(
+  (sum, i) => sum + ((i as any).documents?.length ?? 0), 0
+);
+
+// สีตาม standard color
+const colorMap: Record<string, string> = {
+  blue:   'bg-blue-600',
+  green:  'bg-green-600',
+  purple: 'bg-purple-600',
+  orange: 'bg-orange-600',
+};
+const badgeColor = colorMap[standard.color] ?? 'bg-blue-600';
+---
+
+<Layout title={`มาตรฐานที่ ${standard.code}: ${standard.name}`}>
+
+  <!-- ===== Breadcrumb ===== -->
+  <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+    <a href={BASE + '/'} class="hover:text-blue-600 transition-colors">หน้าหลัก</a>
+    <span>›</span>
+    <span class="text-gray-800 font-medium">มาตรฐานที่ {standard.code}</span>
+  </nav>
+
+  <!-- ===== Standard Header ===== -->
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
+    <div class="flex items-start gap-4">
+      <span class="text-4xl">{standard.icon}</span>
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-2 flex-wrap">
+          <span class={`${badgeColor} text-white text-sm font-bold px-3 py-1 rounded-full`}>
+            มาตรฐานที่ {standard.code}
+          </span>
+        </div>
+        <h1 class="text-xl font-bold text-gray-800 leading-snug mb-2">
+          {standard.name}
+        </h1>
+        {standard.description && (
+          <p class="text-gray-500 leading-relaxed">{standard.description}</p>
+        )}
+        <!-- สถิติ -->
+        <div class="flex gap-6 mt-4 pt-4 border-t border-gray-100">
+          <div>
+            <span class="text-2xl font-bold text-gray-700">{standard.indicators.length}</span>
+            <span class="text-sm text-gray-500 ml-1">ตัวบ่งชี้</span>
+          </div>
+          <div>
+            <span class="text-2xl font-bold text-gray-700">{totalDocs}</span>
+            <span class="text-sm text-gray-500 ml-1">เอกสารหลักฐาน</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Indicators List ===== -->
+  <div>
+    <h2 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      ตัวบ่งชี้และประเด็นพิจารณา
+    </h2>
+
+    {standard.indicators.length > 0 ? (
+      standard.indicators.map((indicator) => (
+        <IndicatorSection
+          code={indicator.code}
+          name={indicator.name}
+          description={indicator.description}
+          documents={(indicator as any).documents ?? []}
+        />
+      ))
+    ) : (
+      <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
+        <p class="text-gray-400">ยังไม่มีตัวบ่งชี้</p>
+      </div>
+    )}
+  </div>
+
+  <!-- ===== Navigation ===== -->
+  <div class="mt-8 flex justify-between items-center pt-6 border-t border-gray-200">
+    <a href={BASE + '/'}
+       class="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"/>
+      </svg>
+      กลับหน้าหลัก
+    </a>
+
+    <!-- ปุ่มไปมาตรฐานถัดไป -->
+    {Number(standard.code) < 3 && (
+      <a href={`${BASE}/standard/${Number(standard.code) + 1}`}
+         class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+        มาตรฐานที่ {Number(standard.code) + 1}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
+      </a>
+    )}
+  </div>
+
+</Layout>

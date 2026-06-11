@@ -1,0 +1,88 @@
+# ============================================================
+# GitHub Actions: Build Astro SSG จาก Neon.tech → Deploy ไป GitHub Pages
+#
+# Trigger:
+#   1. Push ไปที่ branch main
+#   2. Dispatch จาก Admin Panel (หลังบันทึกเอกสารใหม่)
+#   3. ตั้ง schedule รันทุกคืน 23:00 น. (ถ้าอยากให้อัปเดตอัตโนมัติ)
+#
+# Secrets ที่ต้องตั้งค่าใน GitHub Repository:
+#   DATABASE_URL  — Connection string จาก Neon.tech
+#   SCHOOL_NAME   — ชื่อโรงเรียน
+#   SCHOOL_SUBTITLE — สังกัด/เขตพื้นที่
+# ============================================================
+
+name: Build & Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:          # เรียกจาก Admin Panel ผ่าน GitHub API
+  schedule:
+    - cron: '0 16 * * *'      # รันทุกวัน 23:00 น. ตามเวลาไทย (UTC+7 = UTC 16:00)
+
+# อนุญาตให้ workflow นี้ deploy ไป GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# ป้องกัน deploy ซ้อนกัน
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Astro Site
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout โค้ด
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. ติดตั้ง Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: public-site/package-lock.json
+
+      # 3. ติดตั้ง dependencies
+      - name: Install dependencies
+        working-directory: public-site
+        run: npm ci
+
+      # 4. Build Astro — ตัวแปร DATABASE_URL จาก GitHub Secrets
+      - name: Build Astro
+        working-directory: public-site
+        run: npm run build
+        env:
+          DATABASE_URL:     ${{ secrets.DATABASE_URL }}
+          SCHOOL_NAME:      ${{ secrets.SCHOOL_NAME }}
+          SCHOOL_SUBTITLE:  ${{ secrets.SCHOOL_SUBTITLE }}
+
+      # 5. เตรียม artifact สำหรับ GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public-site/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,95 @@
+---
+/**
+ * index.astro — หน้า Dashboard หลัก
+ * แสดงมาตรฐานทั้งหมดเป็น card grid
+ * ข้อมูลถูกดึงจาก Neon.tech ตอน build time
+ */
+import Layout from '../layouts/Layout.astro';
+import StandardCard from '../components/StandardCard.astro';
+import { getFullData } from '../lib/db';
+
+// ดึงข้อมูลทั้งหมดจาก Neon Postgres ตอน Build
+const standards = await getFullData();
+
+// คำนวณสถิติรวม
+const totalIndicators = standards.reduce((sum, s) => sum + (s.indicators?.length ?? 0), 0);
+const totalDocuments  = standards.reduce((sum, s) =>
+  sum + (s.indicators?.reduce((iSum, i) => iSum + (i.documents?.length ?? 0), 0) ?? 0), 0);
+
+// วันที่ build
+const buildDate = new Date().toLocaleDateString('th-TH', {
+  year: 'numeric', month: 'long', day: 'numeric'
+});
+---
+
+<Layout title="ภาพรวมมาตรฐาน — ระบบเอกสาร สมศ. รอบห้า">
+
+  <!-- ===== Page Header ===== -->
+  <div class="mb-8">
+    <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+      <span>หน้าหลัก</span>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-800">
+      ภาพรวมมาตรฐาน สมศ. รอบห้า
+    </h1>
+    <p class="text-gray-500 mt-1">
+      เลือกมาตรฐานเพื่อดูตัวบ่งชี้และเอกสารหลักฐาน
+    </p>
+  </div>
+
+  <!-- ===== Summary Stats ===== -->
+  <div class="grid grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
+      <p class="text-3xl font-bold text-blue-600">{standards.length}</p>
+      <p class="text-sm text-gray-500 mt-1">มาตรฐาน</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
+      <p class="text-3xl font-bold text-green-600">{totalIndicators}</p>
+      <p class="text-sm text-gray-500 mt-1">ตัวบ่งชี้</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
+      <p class="text-3xl font-bold text-purple-600">{totalDocuments}</p>
+      <p class="text-sm text-gray-500 mt-1">เอกสารหลักฐาน</p>
+    </div>
+  </div>
+
+  <!-- ===== Standards Grid ===== -->
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {standards.map((standard) => {
+      const indicatorCount = standard.indicators?.length ?? 0;
+      const documentCount  = standard.indicators?.reduce(
+        (sum, i) => sum + (i.documents?.length ?? 0), 0
+      ) ?? 0;
+
+      return (
+        <StandardCard
+          id={standard.id}
+          code={standard.code}
+          name={standard.name}
+          description={standard.description}
+          icon={standard.icon}
+          color={standard.color}
+          indicatorCount={indicatorCount}
+          documentCount={documentCount}
+        />
+      );
+    })}
+  </div>
+
+  <!-- ===== ไม่มีข้อมูล ===== -->
+  {standards.length === 0 && (
+    <div class="text-center py-16">
+      <p class="text-4xl mb-4">📭</p>
+      <p class="text-gray-500">ยังไม่มีข้อมูลมาตรฐาน — กรุณาเพิ่มข้อมูลใน Admin Panel</p>
+    </div>
+  )}
+
+  <!-- ===== Build info ===== -->
+  <div class="mt-10 pt-6 border-t border-gray-200 text-center">
+    <p class="text-xs text-gray-400">
+      ข้อมูล ณ วันที่ {buildDate} •
+      กรรมการสามารถเข้าถึงเอกสารได้ภายใน 2–3 คลิก
+    </p>
+  </div>
+
+</Layout>

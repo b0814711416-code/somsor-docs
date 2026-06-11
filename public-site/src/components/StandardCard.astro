@@ -1,0 +1,71 @@
+---
+// StandardCard.astro — การ์ดมาตรฐานบนหน้า Dashboard
+interface Props {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  icon: string;
+  color: string;
+  indicatorCount: number;
+  documentCount: number;
+}
+
+const { code, name, description, icon, color, indicatorCount, documentCount } = Astro.props;
+const BASE = import.meta.env.BASE_URL;
+
+// แมปสีตาม color field ในฐานข้อมูล
+const colorMap: Record<string, { bg: string; border: string; badge: string; hover: string }> = {
+  blue:   { bg: 'bg-blue-50',   border: 'border-blue-200',  badge: 'bg-blue-600',   hover: 'hover:border-blue-400 hover:shadow-blue-100' },
+  green:  { bg: 'bg-green-50',  border: 'border-green-200', badge: 'bg-green-600',  hover: 'hover:border-green-400 hover:shadow-green-100' },
+  purple: { bg: 'bg-purple-50', border: 'border-purple-200',badge: 'bg-purple-600', hover: 'hover:border-purple-400 hover:shadow-purple-100' },
+  orange: { bg: 'bg-orange-50', border: 'border-orange-200',badge: 'bg-orange-600', hover: 'hover:border-orange-400 hover:shadow-orange-100' },
+};
+const c = colorMap[color] ?? colorMap.blue;
+---
+
+<a
+  href={`${BASE}/standard/${code}`}
+  class={`group block rounded-2xl border-2 ${c.border} ${c.bg}
+         p-6 transition-all duration-200 hover:shadow-lg ${c.hover}`}
+>
+  <!-- Top row: icon + มาตรฐานที่ X -->
+  <div class="flex items-start justify-between gap-3 mb-4">
+    <span class="text-3xl">{icon}</span>
+    <span class={`${c.badge} text-white text-xs font-bold px-3 py-1 rounded-full`}>
+      มาตรฐานที่ {code}
+    </span>
+  </div>
+
+  <!-- ชื่อมาตรฐาน -->
+  <h2 class="text-base font-bold text-gray-800 leading-snug mb-2 group-hover:text-blue-700 transition-colors">
+    {name}
+  </h2>
+
+  {description && (
+    <p class="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-4">
+      {description}
+    </p>
+  )}
+
+  <!-- Stats -->
+  <div class="flex items-center gap-4 mt-auto pt-4 border-t border-gray-200">
+    <div class="text-center">
+      <p class="text-xl font-bold text-gray-700">{indicatorCount}</p>
+      <p class="text-xs text-gray-500">ตัวบ่งชี้</p>
+    </div>
+    <div class="w-px h-8 bg-gray-200"></div>
+    <div class="text-center">
+      <p class="text-xl font-bold text-gray-700">{documentCount}</p>
+      <p class="text-xs text-gray-500">เอกสาร</p>
+    </div>
+    <div class="ml-auto">
+      <!-- ลูกศร "ดูเพิ่มเติม" -->
+      <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors"
+           fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+      </svg>
+    </div>
+  </div>
+</a>
