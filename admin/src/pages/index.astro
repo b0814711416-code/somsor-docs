@@ -90,12 +90,31 @@ const recentDocs = [...documents]
     </div>
   </div>
 
-  <!-- Quick add button -->
-  <div class="mt-6 text-center">
+  <!-- Quick actions -->
+  <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <a href="/standards"
+       class="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-blue-400
+              hover:shadow-md rounded-xl p-4 transition-all text-center">
+      <span class="text-2xl">🏆</span>
+      <span class="text-sm font-medium text-gray-700">จัดการมาตรฐาน</span>
+    </a>
+    <a href="/standards/new"
+       class="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-blue-400
+              hover:shadow-md rounded-xl p-4 transition-all text-center">
+      <span class="text-2xl">➕</span>
+      <span class="text-sm font-medium text-gray-700">เพิ่มมาตรฐาน</span>
+    </a>
+    <a href="/indicators"
+       class="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-green-400
+              hover:shadow-md rounded-xl p-4 transition-all text-center">
+      <span class="text-2xl">📋</span>
+      <span class="text-sm font-medium text-gray-700">จัดการตัวบ่งชี้</span>
+    </a>
     <a href="/documents/new"
-       class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700
-              text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm">
-      <span>➕</span> เพิ่มเอกสารใหม่
+       class="flex flex-col items-center gap-2 bg-blue-600 hover:bg-blue-700
+              rounded-xl p-4 transition-all text-center">
+      <span class="text-2xl">📄</span>
+      <span class="text-sm font-medium text-white">เพิ่มเอกสารใหม่</span>
     </a>
   </div>
 </AdminLayout>
