@@ -3,7 +3,7 @@
  * รับ { email, password } → ตรวจสอบกับฐานข้อมูล → ออก JWT cookie
  */
 import type { APIRoute } from 'astro';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { getAdminByEmail, updateLastLogin } from '../../../lib/db';
 import { signToken, makeLoginCookie } from '../../../lib/auth';
 
