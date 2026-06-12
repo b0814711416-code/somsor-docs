@@ -11,13 +11,13 @@ const basicInds = indicators.filter(i => basicStdIds.has(i.standard_id));
 const earlyInds = indicators.filter(i => earlyStdIds.has(i.standard_id));
 ---
 
-<AdminLayout title="จัดการตัวบ่งชี้" activeMenu="indicators">
+<AdminLayout title="จัดการตัวชี้วัด" activeMenu="indicators">
 
   <div class="flex justify-end mb-6">
     <a href="/indicators/new"
        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white
               text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-      ➕ เพิ่มตัวบ่งชี้ใหม่
+      ➕ เพิ่มตัวชี้วัดใหม่
     </a>
   </div>
 
@@ -28,17 +28,17 @@ const earlyInds = indicators.filter(i => earlyStdIds.has(i.standard_id));
     <div class="mb-8">
       <h2 class="text-base font-bold text-gray-700 mb-3 flex items-center gap-2">
         <span class={`bg-${color}-100 text-${color}-700 text-xs font-bold px-2.5 py-1 rounded-full`}>{label}</span>
-        {inds.length} ตัวบ่งชี้
+        {inds.length} ตัวชี้วัด
       </h2>
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         {inds.length === 0 ? (
-          <div class="text-center py-10 text-gray-400 text-sm">ยังไม่มีตัวบ่งชี้</div>
+          <div class="text-center py-10 text-gray-400 text-sm">ยังไม่มีตัวชี้วัด</div>
         ) : (
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 border-b border-gray-200 text-left">
                 <th class="px-4 py-3 font-semibold text-gray-600">รหัส</th>
-                <th class="px-4 py-3 font-semibold text-gray-600">ชื่อตัวบ่งชี้</th>
+                <th class="px-4 py-3 font-semibold text-gray-600">ชื่อตัวชี้วัด</th>
                 <th class="px-4 py-3 font-semibold text-gray-600">มาตรฐาน</th>
                 <th class="px-4 py-3 font-semibold text-gray-600">ลำดับ</th>
                 <th class="px-4 py-3 font-semibold text-gray-600 text-right">จัดการ</th>
@@ -71,7 +71,7 @@ const earlyInds = indicators.filter(i => earlyStdIds.has(i.standard_id));
   <script is:inline>
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm(`ต้องการลบตัวบ่งชี้ "${btn.dataset.name}" ใช่ไหม?\nเอกสารที่เชื่อมโยงจะถูกลบด้วย`)) return;
+        if (!confirm(`ต้องการลบตัวชี้วัด "${btn.dataset.name}" ใช่ไหม?\nเอกสารที่เชื่อมโยงจะถูกลบด้วย`)) return;
         const res = await fetch(`/api/indicators/${btn.dataset.id}`, { method: 'DELETE' });
         if (res.ok) { window.location.reload(); }
         else { alert('เกิดข้อผิดพลาดในการลบ'); }

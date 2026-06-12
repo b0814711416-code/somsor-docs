@@ -59,7 +59,7 @@ const years = [...new Set(documents.map(d => d.academic_year))].sort().reverse()
         <thead>
           <tr class="bg-gray-50 border-b border-gray-200 text-left">
             <th class="px-4 py-3 font-semibold text-gray-600">ชื่อเอกสาร</th>
-            <th class="px-4 py-3 font-semibold text-gray-600">มาตรฐาน / ตัวบ่งชี้</th>
+            <th class="px-4 py-3 font-semibold text-gray-600">มาตรฐาน / ตัวชี้วัด</th>
             <th class="px-4 py-3 font-semibold text-gray-600">ประเภท</th>
             <th class="px-4 py-3 font-semibold text-gray-600">ปี</th>
             <th class="px-4 py-3 font-semibold text-gray-600">สถานะ</th>
@@ -87,7 +87,7 @@ const years = [...new Set(documents.map(d => d.academic_year))].sort().reverse()
                   </span>
                   <br/>
                   <span class="text-xs text-gray-500 mt-0.5 inline-block">
-                    ตัวบ่งชี้ {doc.indicator_code}
+                    ตัวชี้วัด {doc.indicator_code}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-gray-600 text-xs">{doc.doc_type}</td>

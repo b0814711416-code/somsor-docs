@@ -7,7 +7,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const body = await request.json();
     const indicator = await updateIndicator(id, body);
     if (!indicator) {
-      return new Response(JSON.stringify({ error: 'ไม่พบตัวบ่งชี้' }), {
+      return new Response(JSON.stringify({ error: 'ไม่พบตัวชี้วัด' }), {
         status: 404, headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -26,7 +26,7 @@ export const DELETE: APIRoute = async ({ params }) => {
   try {
     const ok = await deleteIndicator(id);
     if (!ok) {
-      return new Response(JSON.stringify({ error: 'ไม่พบตัวบ่งชี้' }), {
+      return new Response(JSON.stringify({ error: 'ไม่พบตัวชี้วัด' }), {
         status: 404, headers: { 'Content-Type': 'application/json' },
       });
     }

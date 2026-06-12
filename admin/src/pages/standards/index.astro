@@ -106,7 +106,7 @@ const early = standards.filter(s => s.education_level === 'early');
   <script is:inline>
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm(`ต้องการลบมาตรฐาน "${btn.dataset.name}" ใช่ไหม?\nตัวบ่งชี้และเอกสารที่เชื่อมโยงจะถูกลบด้วย`)) return;
+        if (!confirm(`ต้องการลบมาตรฐาน "${btn.dataset.name}" ใช่ไหม?\nตัวชี้วัดและเอกสารที่เชื่อมโยงจะถูกลบด้วย`)) return;
         const res = await fetch(`/api/standards/${btn.dataset.id}`, { method: 'DELETE' });
         if (res.ok) { window.location.reload(); }
         else { alert('เกิดข้อผิดพลาดในการลบ'); }

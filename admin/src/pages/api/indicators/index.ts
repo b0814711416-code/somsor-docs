@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
     const { standard_id, code, name, description, sort_order } = body;
 
     if (!standard_id || !code || !name) {
-      return new Response(JSON.stringify({ error: 'กรุณากรอก มาตรฐาน, รหัส และชื่อตัวบ่งชี้' }), {
+      return new Response(JSON.stringify({ error: 'กรุณากรอก มาตรฐาน, รหัส และชื่อตัวชี้วัด' }), {
         status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
