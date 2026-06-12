@@ -1,3 +1,4 @@
+/// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/client" />
 
 // ประกาศ type ของ environment variables เพื่อให้ TypeScript รู้จัก
