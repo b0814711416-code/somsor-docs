@@ -3,9 +3,19 @@
  * หน้าเพิ่มเอกสารใหม่
  */
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getAllIndicators } from '../../lib/db';
+import { getAllIndicators, getAllStandards } from '../../lib/db';
 
-const indicators = await getAllIndicators();
+const level = Astro.url.searchParams.get('level') ?? 'basic';
+const isEarly = level === 'early';
+const levelLabel = isEarly ? 'ปฐมวัย' : 'การศึกษาขั้นพื้นฐาน';
+
+const [allIndicators, standards] = await Promise.all([getAllIndicators(), getAllStandards()]);
+
+// กรองตาม level
+const levelStdIds = new Set(
+  standards.filter(s => s.education_level === level).map(s => s.id)
+);
+const indicators = allIndicators.filter(i => levelStdIds.has(i.standard_id));
 
 // จัดกลุ่มตาม standard สำหรับ <optgroup>
 const grouped = indicators.reduce((acc, ind) => {
@@ -16,11 +26,11 @@ const grouped = indicators.reduce((acc, ind) => {
 }, {} as Record<string, typeof indicators>);
 
 const DOC_TYPES = ['รายงาน', 'แผน', 'คำสั่ง', 'ภาพถ่าย', 'สถิติ', 'สรุป', 'นวัตกรรม', 'เอกสาร'];
-const currentYear = new Date().getFullYear() + 543; // พ.ศ.
+const currentYear = new Date().getFullYear() + 543;
 const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
 ---
 
-<AdminLayout title="เพิ่มเอกสารใหม่" activeMenu="documents">
+<AdminLayout title={`เพิ่มเอกสารใหม่ — ${levelLabel}`} activeMenu="documents">
 
   <div class="max-w-2xl">
     <!-- Back link -->
@@ -29,7 +39,12 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
     </a>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <h2 class="text-lg font-bold text-gray-800 mb-6">เพิ่มเอกสารหลักฐานใหม่</h2>
+      <div class="flex items-center gap-3 mb-6">
+        <h2 class="text-lg font-bold text-gray-800">เพิ่มเอกสารหลักฐานใหม่</h2>
+        <span class={`text-xs font-bold px-2.5 py-1 rounded-full ${isEarly ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
+          {isEarly ? '🌸 ปฐมวัย' : '🎓 ขั้นพื้นฐาน'}
+        </span>
+      </div>
 
       <!-- Success/Error messages -->
       <div id="successMsg" class="hidden mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">

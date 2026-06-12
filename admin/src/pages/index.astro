@@ -91,18 +91,12 @@ const recentDocs = [...documents]
   </div>
 
   <!-- Quick actions -->
-  <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+  <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
     <a href="/standards"
        class="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-blue-400
               hover:shadow-md rounded-xl p-4 transition-all text-center">
       <span class="text-2xl">🏆</span>
       <span class="text-sm font-medium text-gray-700">จัดการมาตรฐาน</span>
-    </a>
-    <a href="/standards/new"
-       class="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-blue-400
-              hover:shadow-md rounded-xl p-4 transition-all text-center">
-      <span class="text-2xl">➕</span>
-      <span class="text-sm font-medium text-gray-700">เพิ่มมาตรฐาน</span>
     </a>
     <a href="/indicators"
        class="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-green-400
@@ -110,11 +104,23 @@ const recentDocs = [...documents]
       <span class="text-2xl">📋</span>
       <span class="text-sm font-medium text-gray-700">จัดการตัวชี้วัด</span>
     </a>
-    <a href="/documents/new"
+    <a href="/documents"
+       class="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-gray-400
+              hover:shadow-md rounded-xl p-4 transition-all text-center">
+      <span class="text-2xl">📂</span>
+      <span class="text-sm font-medium text-gray-700">จัดการเอกสาร</span>
+    </a>
+    <a href="/documents/new?level=basic"
        class="flex flex-col items-center gap-2 bg-blue-600 hover:bg-blue-700
               rounded-xl p-4 transition-all text-center">
       <span class="text-2xl">📄</span>
-      <span class="text-sm font-medium text-white">เพิ่มเอกสารใหม่</span>
+      <span class="text-sm font-medium text-white">เพิ่มเอกสาร (ขั้นพื้นฐาน)</span>
+    </a>
+    <a href="/documents/new?level=early"
+       class="flex flex-col items-center gap-2 bg-pink-600 hover:bg-pink-700
+              rounded-xl p-4 transition-all text-center col-span-2 sm:col-span-1">
+      <span class="text-2xl">🌸</span>
+      <span class="text-sm font-medium text-white">เพิ่มเอกสาร (ปฐมวัย)</span>
     </a>
   </div>
 </AdminLayout>

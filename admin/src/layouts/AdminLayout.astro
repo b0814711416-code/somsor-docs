@@ -47,10 +47,15 @@ const session = Astro.locals.session;
                   ${activeMenu === 'documents' ? 'bg-blue-700 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white'}`}>
           <span>📄</span> จัดการเอกสาร
         </a>
-        <a href="/documents/new"
+        <a href="/documents/new?level=basic"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                   text-blue-200 hover:bg-blue-800 hover:text-white transition-colors ml-4">
-          <span>➕</span> เพิ่มเอกสารใหม่
+          <span>➕</span> เพิ่มเอกสาร (ขั้นพื้นฐาน)
+        </a>
+        <a href="/documents/new?level=early"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                  text-pink-300 hover:bg-pink-900 hover:text-white transition-colors ml-4">
+          <span>➕</span> เพิ่มเอกสาร (ปฐมวัย)
         </a>
         <a href="/standards"
            class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
