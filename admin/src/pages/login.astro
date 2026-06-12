@@ -89,7 +89,7 @@ const error = Astro.url.searchParams.get('error');
     </p>
   </div>
 
-  <script>
+  <script is:inline>
     const form = document.getElementById('loginForm');
     const submitBtn = document.getElementById('submitBtn');
     const errorMsg  = document.getElementById('errorMsg');
