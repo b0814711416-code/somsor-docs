@@ -82,11 +82,13 @@ const session = Astro.locals.session;
                   text-pink-300 hover:bg-pink-900 hover:text-white transition-colors ml-4">
           <span>➕</span> เพิ่มตัวชี้วัด (ปฐมวัย)
         </a>
-        <a href="/users"
-           class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                  ${activeMenu === 'users' ? 'bg-blue-700 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white'}`}>
-          <span>👥</span> ผู้ใช้งาน
-        </a>
+        {session?.role === 'admin' && (
+          <a href="/users"
+             class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                    ${activeMenu === 'users' ? 'bg-blue-700 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white'}`}>
+            <span>👥</span> ผู้ใช้งาน
+          </a>
+        )}
       </nav>
 
       <!-- User info + Logout -->

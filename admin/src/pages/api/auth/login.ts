@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // ออก JWT token
-  const token = await signToken({ userId: user.id, email: user.email });
+  const token = await signToken({ userId: user.id, email: user.email, role: user.role ?? 'teacher' });
   await updateLastLogin(user.id);
 
   return new Response(JSON.stringify({ ok: true, displayName: user.display_name }), {

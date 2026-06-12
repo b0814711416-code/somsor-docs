@@ -1,5 +1,7 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
+
+if (Astro.locals.session?.role !== 'admin') return Astro.redirect('/');
 ---
 
 <AdminLayout title="เพิ่มผู้ใช้งาน" activeMenu="users">
@@ -21,7 +23,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       <form id="userForm" class="space-y-5">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อที่แสดง</label>
-          <input type="text" name="display_name" placeholder="เช่น ผู้ดูแลระบบ"
+          <input type="text" name="display_name" placeholder="เช่น นายสมชาย ใจดี"
                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
         </div>
 
@@ -43,6 +45,26 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
         </div>
 
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทผู้ใช้งาน <span class="text-red-500">*</span></label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-start gap-3 border border-blue-200 rounded-lg p-3 cursor-pointer hover:bg-blue-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+              <input type="radio" name="role" value="teacher" checked class="mt-0.5 accent-blue-600"/>
+              <div>
+                <p class="text-sm font-semibold text-gray-700">👩‍🏫 ครู</p>
+                <p class="text-xs text-gray-400 mt-0.5">จัดการเอกสาร มาตรฐาน ตัวชี้วัด</p>
+              </div>
+            </label>
+            <label class="flex items-start gap-3 border border-purple-200 rounded-lg p-3 cursor-pointer hover:bg-purple-50 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
+              <input type="radio" name="role" value="admin" class="mt-0.5 accent-purple-600"/>
+              <div>
+                <p class="text-sm font-semibold text-gray-700">👑 Admin</p>
+                <p class="text-xs text-gray-400 mt-0.5">ทุกสิทธิ์ รวมถึงจัดการผู้ใช้งาน</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div class="flex gap-3 pt-2">
           <button type="submit" id="submitBtn"
                   class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60">
@@ -57,11 +79,11 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   </div>
 
   <script is:inline>
-    const form        = document.getElementById('userForm');
-    const submitBtn   = document.getElementById('submitBtn');
-    const successMsg  = document.getElementById('successMsg');
-    const errorMsg    = document.getElementById('errorMsg');
-    const errorText   = document.getElementById('errorText');
+    const form       = document.getElementById('userForm');
+    const submitBtn  = document.getElementById('submitBtn');
+    const successMsg = document.getElementById('successMsg');
+    const errorMsg   = document.getElementById('errorMsg');
+    const errorText  = document.getElementById('errorText');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -82,7 +104,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         const res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: data.email, password: data.password, display_name: data.display_name }),
+          body: JSON.stringify({ email: data.email, password: data.password, display_name: data.display_name, role: data.role }),
         });
         const json = await res.json();
         if (res.ok) {

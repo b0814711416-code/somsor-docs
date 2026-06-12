@@ -13,6 +13,7 @@ const MAX_AGE_SECONDS = 60 * 60 * 8; // 8 ชั่วโมง
 export interface SessionPayload {
   userId: number;
   email: string;
+  role: string;
 }
 
 /** สร้าง JWT token */
