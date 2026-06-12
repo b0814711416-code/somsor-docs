@@ -113,30 +113,92 @@ const session = Astro.locals.session;
   </div>
 
   <!-- Rebuild script -->
-  <script>
+  <script is:inline>
     const btn  = document.getElementById('rebuildBtn');
     const text = document.getElementById('rebuildText');
+
+    let pollTimer = null;
+    let triggeredAt = null;
+
+    async function pollStatus() {
+      try {
+        const res  = await fetch('/api/rebuild-status');
+        const data = await res.json();
+
+        // นับเฉพาะ run ที่เริ่มหลังจากที่เรากด rebuild
+        if (triggeredAt && data.started_at) {
+          const startedAt = new Date(data.started_at).getTime();
+          if (startedAt < triggeredAt - 5000) return; // run เก่า ข้ามไป
+        }
+
+        if (data.status === 'completed') {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          btn.disabled = false;
+
+          if (data.conclusion === 'success') {
+            text.textContent = '✅ เสร็จแล้ว!';
+            showNotification('✅ Rebuild สำเร็จ!', 'เว็บไซต์สาธารณะได้รับการอัปเดตแล้ว');
+            setTimeout(() => { text.textContent = 'Rebuild เว็บไซต์'; }, 5000);
+          } else {
+            text.textContent = '❌ มีข้อผิดพลาด';
+            showNotification('❌ Rebuild ล้มเหลว', 'กรุณาตรวจสอบ GitHub Actions');
+            setTimeout(() => { text.textContent = 'Rebuild เว็บไซต์'; }, 5000);
+          }
+        } else {
+          const elapsed = triggeredAt ? Math.round((Date.now() - triggeredAt) / 1000) : 0;
+          text.textContent = `กำลัง Rebuild... (${elapsed}s)`;
+        }
+      } catch {}
+    }
+
+    function showNotification(title, body) {
+      // Browser Notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/favicon.svg' });
+      } else {
+        // fallback — แสดงแถบแจ้งเตือนบนหน้าเว็บ
+        const bar = document.createElement('div');
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px 20px;text-align:center;font-family:Sarabun,sans-serif;font-size:14px;font-weight:600;';
+        bar.style.background = title.startsWith('✅') ? '#16a34a' : '#dc2626';
+        bar.style.color = 'white';
+        bar.textContent = title + ' — ' + body;
+        document.body.prepend(bar);
+        setTimeout(() => bar.remove(), 6000);
+      }
+    }
 
     btn?.addEventListener('click', async () => {
       if (!confirm('ต้องการ Rebuild เว็บไซต์สาธารณะเพื่ออัปเดตข้อมูลใหม่ใช่ไหม?\n(ใช้เวลาประมาณ 1-2 นาที)')) return;
 
+      // ขอสิทธิ์แจ้งเตือน
+      if ('Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       btn.disabled = true;
-      text.textContent = 'กำลัง Rebuild...';
+      text.textContent = 'กำลังเริ่ม...';
+      triggeredAt = Date.now();
 
       try {
         const res  = await fetch('/api/rebuild', { method: 'POST' });
         const data = await res.json();
 
         if (res.ok) {
-          alert('✅ ' + data.message);
+          text.textContent = 'กำลัง Rebuild... (0s)';
+          // poll ทุก 10 วินาที
+          pollTimer = setInterval(pollStatus, 10000);
+          // poll ครั้งแรกหลัง 15 วินาที (รอ GitHub Actions เริ่มทำงาน)
+          setTimeout(pollStatus, 15000);
         } else {
+          btn.disabled = false;
+          text.textContent = 'Rebuild เว็บไซต์';
           alert('❌ เกิดข้อผิดพลาด: ' + data.error);
         }
       } catch {
-        alert('❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
-      } finally {
         btn.disabled = false;
         text.textContent = 'Rebuild เว็บไซต์';
+        alert('❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
       }
     });
   </script>

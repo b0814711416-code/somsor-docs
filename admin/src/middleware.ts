@@ -7,7 +7,7 @@ import { defineMiddleware } from 'astro:middleware';
 import { getSession } from './lib/auth';
 
 // หน้า/route ที่ไม่ต้องการ auth
-const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/debug'];
+const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/debug', '/api/rebuild-status'];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = new URL(context.request.url);
