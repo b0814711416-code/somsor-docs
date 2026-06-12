@@ -29,6 +29,7 @@ export interface Document {
   created_at: string; updated_at: string;
   indicator_code?: string; indicator_name?: string;
   standard_code?: string; standard_name?: string;
+  education_level?: string;
 }
 
 export interface AdminUser {
@@ -155,11 +156,12 @@ export async function getAllDocuments(): Promise<Document[]> {
            i.code  AS indicator_code,
            i.name  AS indicator_name,
            s.code  AS standard_code,
-           s.name  AS standard_name
+           s.name  AS standard_name,
+           s.education_level
     FROM documents d
     JOIN indicators i ON i.id = d.indicator_id
     JOIN standards  s ON s.id = i.standard_id
-    ORDER BY s.sort_order, i.sort_order, d.sort_order, d.id
+    ORDER BY s.education_level, s.sort_order, i.sort_order, d.sort_order, d.id
   ` as Document[];
 }
 
