@@ -159,11 +159,11 @@ const filtered = levelDocs
   </div>
 
   <script is:inline>
-    document.querySelectorAll('.toggle-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id     = (btn as HTMLElement).dataset.id;
-        const active = (btn as HTMLElement).dataset.active === '1';
-        const res = await fetch(`/api/documents/${id}`, {
+    document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        const id     = btn.dataset.id;
+        const active = btn.dataset.active === '1';
+        const res = await fetch('/api/documents/' + id, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ is_active: !active }),
@@ -173,13 +173,13 @@ const filtered = levelDocs
       });
     });
 
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id    = (btn as HTMLElement).dataset.id;
-        const title = (btn as HTMLElement).dataset.title;
-        if (!confirm(`ต้องการลบเอกสาร "${title}" ใช่ไหม?\nการลบไม่สามารถกู้คืนได้`)) return;
-        const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
-        if (res.ok) (btn as HTMLElement).closest('tr')?.remove();
+    document.querySelectorAll('.delete-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        const id    = btn.dataset.id;
+        const title = btn.dataset.title;
+        if (!confirm('ต้องการลบเอกสาร "' + title + '" ใช่ไหม?\nการลบไม่สามารถกู้คืนได้')) return;
+        const res = await fetch('/api/documents/' + id, { method: 'DELETE' });
+        if (res.ok) btn.closest('tr').remove();
         else alert('เกิดข้อผิดพลาดในการลบ');
       });
     });
