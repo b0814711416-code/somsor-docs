@@ -10,7 +10,7 @@ const filterStd  = Astro.url.searchParams.get('standard') ?? '';
 const filterYear = Astro.url.searchParams.get('year') ?? '';
 const showInactive = Astro.url.searchParams.get('inactive') === '1';
 
-const levelDocs = documents.filter(d => (d.education_level ?? 'basic') === level);
+const levelDocs = documents.filter(d => (d.education_level || 'basic') === level);
 
 const levelStandards = standards.filter(s => s.education_level === level);
 const years = [...new Set(levelDocs.map(d => d.academic_year))].sort().reverse();
@@ -22,6 +22,9 @@ const filtered = levelDocs
 ---
 
 <AdminLayout title="จัดการเอกสาร" activeMenu="documents">
+
+  <!-- Debug: ลบออกหลังแก้ปัญหาได้ -->
+  <p class="text-xs text-gray-400 mb-2">เอกสารในฐานข้อมูลทั้งหมด: {documents.length} รายการ (basic: {documents.filter(d=>(d.education_level||'basic')==='basic').length}, early: {documents.filter(d=>d.education_level==='early').length})</p>
 
   <!-- Level Tabs -->
   <div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
