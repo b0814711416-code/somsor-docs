@@ -226,3 +226,48 @@ export async function getAdminByEmail(email: string) {
 export async function updateLastLogin(id: number) {
   await sql`UPDATE admin_users SET last_login_at = NOW() WHERE id = ${id}`;
 }
+
+export async function getAllAdminUsers(): Promise<AdminUser[]> {
+  return await sql`
+    SELECT id, email, display_name, is_active, last_login_at
+    FROM admin_users ORDER BY id
+  ` as AdminUser[];
+}
+
+export async function getAdminUserById(id: number): Promise<AdminUser | null> {
+  const rows = await sql`
+    SELECT id, email, display_name, is_active, last_login_at
+    FROM admin_users WHERE id = ${id}
+  ` as AdminUser[];
+  return rows[0] ?? null;
+}
+
+export async function createAdminUser(data: {
+  email: string; password_hash: string; display_name?: string;
+}): Promise<AdminUser> {
+  const rows = await sql`
+    INSERT INTO admin_users (email, password_hash, display_name)
+    VALUES (${data.email}, ${data.password_hash}, ${data.display_name ?? null})
+    RETURNING id, email, display_name, is_active, last_login_at
+  ` as AdminUser[];
+  return rows[0];
+}
+
+export async function updateAdminUser(id: number, data: {
+  display_name?: string; is_active?: boolean; password_hash?: string;
+}): Promise<AdminUser | null> {
+  const rows = await sql`
+    UPDATE admin_users SET
+      display_name  = COALESCE(${data.display_name  ?? null}, display_name),
+      is_active     = COALESCE(${data.is_active     ?? null}, is_active),
+      password_hash = COALESCE(${data.password_hash ?? null}, password_hash)
+    WHERE id = ${id}
+    RETURNING id, email, display_name, is_active, last_login_at
+  ` as AdminUser[];
+  return rows[0] ?? null;
+}
+
+export async function deleteAdminUser(id: number): Promise<boolean> {
+  const rows = await sql`DELETE FROM admin_users WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
+}
