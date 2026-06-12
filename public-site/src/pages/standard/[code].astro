@@ -107,25 +107,14 @@ const badgeColor = colorMap[standard.color] ?? 'bg-blue-600';
   </div>
 
   <!-- ===== Navigation ===== -->
-  <div class="mt-8 flex justify-between items-center pt-6 border-t border-gray-200">
-    <a href={BASE + '/'}
-       class="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors">
+  <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+    <a href={`${BASE}/${(standard as any).education_level === 'early' ? 'early' : 'basic'}`}
+       class="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"/>
       </svg>
-      กลับหน้าหลัก
+      กลับรายการมาตรฐาน{(standard as any).education_level === 'early' ? 'ระดับปฐมวัย' : 'ระดับขั้นพื้นฐาน'}
     </a>
-
-    <!-- ปุ่มไปมาตรฐานถัดไป -->
-    {Number(standard.code) < 3 && (
-      <a href={`${BASE}/standard/${Number(standard.code) + 1}`}
-         class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
-        มาตรฐานที่ {Number(standard.code) + 1}
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-        </svg>
-      </a>
-    )}
   </div>
 
 </Layout>

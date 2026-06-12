@@ -1,95 +1,89 @@
 ---
-/**
- * index.astro — หน้า Dashboard หลัก
- * แสดงมาตรฐานทั้งหมดเป็น card grid
- * ข้อมูลถูกดึงจาก Neon.tech ตอน build time
- */
 import Layout from '../layouts/Layout.astro';
-import StandardCard from '../components/StandardCard.astro';
-import { getFullData } from '../lib/db';
+import { getLevelStats } from '../lib/db';
 
-// ดึงข้อมูลทั้งหมดจาก Neon Postgres ตอน Build
-const standards = await getFullData();
-
-// คำนวณสถิติรวม
-const totalIndicators = standards.reduce((sum, s) => sum + (s.indicators?.length ?? 0), 0);
-const totalDocuments  = standards.reduce((sum, s) =>
-  sum + (s.indicators?.reduce((iSum, i) => iSum + (i.documents?.length ?? 0), 0) ?? 0), 0);
-
-// วันที่ build
-const buildDate = new Date().toLocaleDateString('th-TH', {
-  year: 'numeric', month: 'long', day: 'numeric'
-});
+const stats = await getLevelStats();
+const BASE = import.meta.env.BASE_URL;
 ---
 
-<Layout title="ภาพรวมมาตรฐาน — ระบบเอกสาร สมศ. รอบห้า">
+<Layout title="ระบบเอกสารหลักฐาน สมศ. รอบห้า — เลือกระดับการศึกษา">
 
-  <!-- ===== Page Header ===== -->
-  <div class="mb-8">
-    <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-      <span>หน้าหลัก</span>
+  <div class="min-h-[60vh] flex flex-col items-center justify-center py-12">
+
+    <div class="text-center mb-10">
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">เลือกระดับการศึกษา</h1>
+      <p class="text-gray-500">กรุณาเลือกระดับการศึกษาที่ต้องการประเมิน</p>
     </div>
-    <h1 class="text-2xl font-bold text-gray-800">
-      ภาพรวมมาตรฐาน สมศ. รอบห้า
-    </h1>
-    <p class="text-gray-500 mt-1">
-      เลือกมาตรฐานเพื่อดูตัวบ่งชี้และเอกสารหลักฐาน
-    </p>
-  </div>
 
-  <!-- ===== Summary Stats ===== -->
-  <div class="grid grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
-      <p class="text-3xl font-bold text-blue-600">{standards.length}</p>
-      <p class="text-sm text-gray-500 mt-1">มาตรฐาน</p>
+    <div class="grid sm:grid-cols-2 gap-6 w-full max-w-2xl">
+
+      <!-- ขั้นพื้นฐาน -->
+      <a href={BASE + '/basic'}
+         class="group block bg-white rounded-2xl border-2 border-blue-200 hover:border-blue-500
+                hover:shadow-xl hover:shadow-blue-100 transition-all duration-200 p-8 text-center">
+        <div class="text-5xl mb-4">🎓</div>
+        <h2 class="text-lg font-bold text-gray-800 group-hover:text-blue-700 transition-colors mb-1">
+          ระดับการศึกษาขั้นพื้นฐาน
+        </h2>
+        <p class="text-sm text-gray-500 mb-6">Basic Education</p>
+        <div class="flex justify-center gap-6 text-center">
+          <div>
+            <p class="text-2xl font-bold text-blue-600">{stats.basic.standards}</p>
+            <p class="text-xs text-gray-400">มาตรฐาน</p>
+          </div>
+          <div class="w-px bg-gray-200"></div>
+          <div>
+            <p class="text-2xl font-bold text-blue-600">{stats.basic.indicators}</p>
+            <p class="text-xs text-gray-400">ตัวบ่งชี้</p>
+          </div>
+          <div class="w-px bg-gray-200"></div>
+          <div>
+            <p class="text-2xl font-bold text-blue-600">{stats.basic.documents}</p>
+            <p class="text-xs text-gray-400">เอกสาร</p>
+          </div>
+        </div>
+        <div class="mt-6">
+          <span class="inline-flex items-center gap-2 bg-blue-600 group-hover:bg-blue-700
+                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+            เข้าดูเอกสาร →
+          </span>
+        </div>
+      </a>
+
+      <!-- ปฐมวัย -->
+      <a href={BASE + '/early'}
+         class="group block bg-white rounded-2xl border-2 border-pink-200 hover:border-pink-500
+                hover:shadow-xl hover:shadow-pink-100 transition-all duration-200 p-8 text-center">
+        <div class="text-5xl mb-4">🌸</div>
+        <h2 class="text-lg font-bold text-gray-800 group-hover:text-pink-700 transition-colors mb-1">
+          ระดับปฐมวัย
+        </h2>
+        <p class="text-sm text-gray-500 mb-6">Early Childhood Education</p>
+        <div class="flex justify-center gap-6 text-center">
+          <div>
+            <p class="text-2xl font-bold text-pink-600">{stats.early.standards}</p>
+            <p class="text-xs text-gray-400">มาตรฐาน</p>
+          </div>
+          <div class="w-px bg-gray-200"></div>
+          <div>
+            <p class="text-2xl font-bold text-pink-600">{stats.early.indicators}</p>
+            <p class="text-xs text-gray-400">ตัวบ่งชี้</p>
+          </div>
+          <div class="w-px bg-gray-200"></div>
+          <div>
+            <p class="text-2xl font-bold text-pink-600">{stats.early.documents}</p>
+            <p class="text-xs text-gray-400">เอกสาร</p>
+          </div>
+        </div>
+        <div class="mt-6">
+          <span class="inline-flex items-center gap-2 bg-pink-600 group-hover:bg-pink-700
+                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+            เข้าดูเอกสาร →
+          </span>
+        </div>
+      </a>
+
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
-      <p class="text-3xl font-bold text-green-600">{totalIndicators}</p>
-      <p class="text-sm text-gray-500 mt-1">ตัวบ่งชี้</p>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
-      <p class="text-3xl font-bold text-purple-600">{totalDocuments}</p>
-      <p class="text-sm text-gray-500 mt-1">เอกสารหลักฐาน</p>
-    </div>
-  </div>
-
-  <!-- ===== Standards Grid ===== -->
-  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    {standards.map((standard) => {
-      const indicatorCount = standard.indicators?.length ?? 0;
-      const documentCount  = standard.indicators?.reduce(
-        (sum, i) => sum + (i.documents?.length ?? 0), 0
-      ) ?? 0;
-
-      return (
-        <StandardCard
-          id={standard.id}
-          code={standard.code}
-          name={standard.name}
-          description={standard.description}
-          icon={standard.icon}
-          color={standard.color}
-          indicatorCount={indicatorCount}
-          documentCount={documentCount}
-        />
-      );
-    })}
-  </div>
-
-  <!-- ===== ไม่มีข้อมูล ===== -->
-  {standards.length === 0 && (
-    <div class="text-center py-16">
-      <p class="text-4xl mb-4">📭</p>
-      <p class="text-gray-500">ยังไม่มีข้อมูลมาตรฐาน — กรุณาเพิ่มข้อมูลใน Admin Panel</p>
-    </div>
-  )}
-
-  <!-- ===== Build info ===== -->
-  <div class="mt-10 pt-6 border-t border-gray-200 text-center">
-    <p class="text-xs text-gray-400">
-      ข้อมูล ณ วันที่ {buildDate} •
-      กรรมการสามารถเข้าถึงเอกสารได้ภายใน 2–3 คลิก
-    </p>
   </div>
 
 </Layout>

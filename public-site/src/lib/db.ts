@@ -21,6 +21,7 @@ export interface Standard {
   icon: string;
   color: string;
   sort_order: number;
+  education_level: string;
 }
 
 export interface Indicator {
@@ -53,10 +54,45 @@ export async function getAllStandards(): Promise<Standard[]> {
   ` as Standard[];
 }
 
+/** ดึงข้อมูลทุกอย่างแยกตามระดับการศึกษา */
+export async function getFullDataByLevel(level: string) {
+  const standards = await sql`
+    SELECT s.id, s.code, s.name, s.description, s.icon, s.color, s.sort_order, s.education_level,
+           json_agg(
+             json_build_object(
+               'id', i.id,
+               'code', i.code,
+               'name', i.name,
+               'description', i.description,
+               'sort_order', i.sort_order,
+               'documents', (
+                 SELECT json_agg(
+                   json_build_object(
+                     'id', d.id,
+                     'title', d.title,
+                     'url', d.url,
+                     'academic_year', d.academic_year,
+                     'doc_type', d.doc_type
+                   ) ORDER BY d.sort_order, d.id
+                 )
+                 FROM documents d
+                 WHERE d.indicator_id = i.id AND d.is_active = TRUE
+               )
+             ) ORDER BY i.sort_order, i.code
+           ) AS indicators
+    FROM standards s
+    LEFT JOIN indicators i ON i.standard_id = s.id
+    WHERE s.education_level = ${level}
+    GROUP BY s.id
+    ORDER BY s.sort_order, s.code
+  `;
+  return standards as Array<Standard & { indicators: Array<Indicator & { documents: Document[] }> }>;
+}
+
 /** ดึงข้อมูลทุกอย่างในคราวเดียว (สำหรับหน้า index) */
 export async function getFullData() {
   const standards = await sql`
-    SELECT s.id, s.code, s.name, s.description, s.icon, s.color, s.sort_order,
+    SELECT s.id, s.code, s.name, s.description, s.icon, s.color, s.sort_order, s.education_level,
            json_agg(
              json_build_object(
                'id', i.id,
@@ -91,7 +127,7 @@ export async function getFullData() {
 /** ดึงข้อมูล standard เดี่ยว พร้อม indicators และ documents */
 export async function getStandardByCode(code: string) {
   const rows = await sql`
-    SELECT s.id, s.code, s.name, s.description, s.icon, s.color
+    SELECT s.id, s.code, s.name, s.description, s.icon, s.color, s.education_level
     FROM standards s
     WHERE s.code = ${code}
     LIMIT 1
@@ -124,4 +160,28 @@ export async function getStandardByCode(code: string) {
 export async function getAllStandardCodes(): Promise<string[]> {
   const rows = await sql`SELECT code FROM standards ORDER BY sort_order`;
   return rows.map((r: any) => r.code);
+}
+
+/** ดึงสถิติแยกตามระดับ (สำหรับหน้า landing) */
+export async function getLevelStats(): Promise<{
+  basic: { standards: number; indicators: number; documents: number };
+  early: { standards: number; indicators: number; documents: number };
+}> {
+  const rows = await sql`
+    SELECT
+      s.education_level,
+      COUNT(DISTINCT s.id)  AS std_count,
+      COUNT(DISTINCT i.id)  AS ind_count,
+      COUNT(DISTINCT d.id)  AS doc_count
+    FROM standards s
+    LEFT JOIN indicators i ON i.standard_id = s.id
+    LEFT JOIN documents  d ON d.indicator_id = i.id AND d.is_active = TRUE
+    GROUP BY s.education_level
+  `;
+  const basic = rows.find((r: any) => r.education_level === 'basic');
+  const early = rows.find((r: any) => r.education_level === 'early');
+  return {
+    basic: { standards: Number(basic?.std_count ?? 0), indicators: Number(basic?.ind_count ?? 0), documents: Number(basic?.doc_count ?? 0) },
+    early: { standards: Number(early?.std_count ?? 0), indicators: Number(early?.ind_count ?? 0), documents: Number(early?.doc_count ?? 0) },
+  };
 }

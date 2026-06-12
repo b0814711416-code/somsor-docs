@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+import StandardCard from '../components/StandardCard.astro';
+import { getFullDataByLevel } from '../lib/db';
+
+const standards = await getFullDataByLevel('basic');
+const totalIndicators = standards.reduce((sum, s) => sum + (s.indicators?.length ?? 0), 0);
+const totalDocuments  = standards.reduce((sum, s) =>
+  sum + (s.indicators?.reduce((iSum, i) => iSum + (i.documents?.length ?? 0), 0) ?? 0), 0);
+
+const BASE = import.meta.env.BASE_URL;
+---
+
+<Layout title="ระดับการศึกษาขั้นพื้นฐาน — ระบบเอกสาร สมศ. รอบห้า">
+
+  <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+    <a href={BASE + '/'} class="hover:text-blue-600 transition-colors">หน้าหลัก</a>
+    <span>›</span>
+    <span class="text-gray-800 font-medium">ระดับการศึกษาขั้นพื้นฐาน</span>
+  </nav>
+
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-1">
+      <span class="text-3xl">🎓</span>
+      <h1 class="text-2xl font-bold text-gray-800">ระดับการศึกษาขั้นพื้นฐาน</h1>
+    </div>
+    <p class="text-gray-500 ml-12">เลือกมาตรฐานเพื่อดูตัวบ่งชี้และเอกสารหลักฐาน</p>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
+      <p class="text-3xl font-bold text-blue-600">{standards.length}</p>
+      <p class="text-sm text-gray-500 mt-1">มาตรฐาน</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
+      <p class="text-3xl font-bold text-green-600">{totalIndicators}</p>
+      <p class="text-sm text-gray-500 mt-1">ตัวบ่งชี้</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
+      <p class="text-3xl font-bold text-purple-600">{totalDocuments}</p>
+      <p class="text-sm text-gray-500 mt-1">เอกสารหลักฐาน</p>
+    </div>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {standards.map((standard) => {
+      const indicatorCount = standard.indicators?.length ?? 0;
+      const documentCount  = standard.indicators?.reduce(
+        (sum, i) => sum + (i.documents?.length ?? 0), 0) ?? 0;
+      return (
+        <StandardCard
+          id={standard.id}
+          code={standard.code}
+          name={standard.name}
+          description={standard.description}
+          icon={standard.icon}
+          color={standard.color}
+          indicatorCount={indicatorCount}
+          documentCount={documentCount}
+        />
+      );
+    })}
+  </div>
+
+  {standards.length === 0 && (
+    <div class="text-center py-16">
+      <p class="text-4xl mb-4">📭</p>
+      <p class="text-gray-500">ยังไม่มีข้อมูลมาตรฐาน — กรุณาเพิ่มข้อมูลใน Admin Panel</p>
+    </div>
+  )}
+
+  <div class="mt-10 pt-6 border-t border-gray-200 text-center">
+    <a href={BASE + '/'} class="text-sm text-gray-400 hover:text-blue-600 transition-colors">
+      ← กลับหน้าเลือกระดับการศึกษา
+    </a>
+  </div>
+
+</Layout>
