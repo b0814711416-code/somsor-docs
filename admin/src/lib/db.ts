@@ -13,6 +13,7 @@ export interface Standard {
   id: number; code: string; name: string;
   description: string | null; icon: string;
   color: string; sort_order: number;
+  education_level: string;
 }
 
 export interface Indicator {
@@ -38,7 +39,49 @@ export interface AdminUser {
 // --------- Standards ---------
 
 export async function getAllStandards(): Promise<Standard[]> {
-  return await sql`SELECT * FROM standards ORDER BY sort_order, code` as Standard[];
+  return await sql`SELECT * FROM standards ORDER BY education_level, sort_order, code` as Standard[];
+}
+
+export async function getStandardById(id: number): Promise<Standard | null> {
+  const rows = await sql`SELECT * FROM standards WHERE id = ${id}` as Standard[];
+  return rows[0] ?? null;
+}
+
+export async function createStandard(data: {
+  code: string; name: string; description?: string;
+  icon: string; color: string; sort_order: number; education_level: string;
+}): Promise<Standard> {
+  const rows = await sql`
+    INSERT INTO standards (code, name, description, icon, color, sort_order, education_level)
+    VALUES (${data.code}, ${data.name}, ${data.description ?? null},
+            ${data.icon}, ${data.color}, ${data.sort_order}, ${data.education_level})
+    RETURNING *
+  ` as Standard[];
+  return rows[0];
+}
+
+export async function updateStandard(id: number, data: {
+  code?: string; name?: string; description?: string;
+  icon?: string; color?: string; sort_order?: number; education_level?: string;
+}): Promise<Standard | null> {
+  const rows = await sql`
+    UPDATE standards SET
+      code            = COALESCE(${data.code            ?? null}, code),
+      name            = COALESCE(${data.name            ?? null}, name),
+      description     = COALESCE(${data.description     ?? null}, description),
+      icon            = COALESCE(${data.icon            ?? null}, icon),
+      color           = COALESCE(${data.color           ?? null}, color),
+      sort_order      = COALESCE(${data.sort_order      ?? null}, sort_order),
+      education_level = COALESCE(${data.education_level ?? null}, education_level)
+    WHERE id = ${id}
+    RETURNING *
+  ` as Standard[];
+  return rows[0] ?? null;
+}
+
+export async function deleteStandard(id: number): Promise<boolean> {
+  const rows = await sql`DELETE FROM standards WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
 }
 
 // --------- Indicators ---------
@@ -50,6 +93,51 @@ export async function getAllIndicators(): Promise<Indicator[]> {
     JOIN standards s ON s.id = i.standard_id
     ORDER BY s.sort_order, i.sort_order, i.code
   ` as Indicator[];
+}
+
+export async function getIndicatorById(id: number): Promise<Indicator | null> {
+  const rows = await sql`
+    SELECT i.*, s.name AS standard_name
+    FROM indicators i
+    JOIN standards s ON s.id = i.standard_id
+    WHERE i.id = ${id}
+  ` as Indicator[];
+  return rows[0] ?? null;
+}
+
+export async function createIndicator(data: {
+  standard_id: number; code: string; name: string;
+  description?: string; sort_order: number;
+}): Promise<Indicator> {
+  const rows = await sql`
+    INSERT INTO indicators (standard_id, code, name, description, sort_order)
+    VALUES (${data.standard_id}, ${data.code}, ${data.name},
+            ${data.description ?? null}, ${data.sort_order})
+    RETURNING *
+  ` as Indicator[];
+  return rows[0];
+}
+
+export async function updateIndicator(id: number, data: {
+  standard_id?: number; code?: string; name?: string;
+  description?: string; sort_order?: number;
+}): Promise<Indicator | null> {
+  const rows = await sql`
+    UPDATE indicators SET
+      standard_id = COALESCE(${data.standard_id ?? null}, standard_id),
+      code        = COALESCE(${data.code        ?? null}, code),
+      name        = COALESCE(${data.name        ?? null}, name),
+      description = COALESCE(${data.description ?? null}, description),
+      sort_order  = COALESCE(${data.sort_order  ?? null}, sort_order)
+    WHERE id = ${id}
+    RETURNING *
+  ` as Indicator[];
+  return rows[0] ?? null;
+}
+
+export async function deleteIndicator(id: number): Promise<boolean> {
+  const rows = await sql`DELETE FROM indicators WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
 }
 
 export async function getIndicatorsByStandard(standardId: number): Promise<Indicator[]> {

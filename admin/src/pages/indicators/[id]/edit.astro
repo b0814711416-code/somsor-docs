@@ -1,0 +1,124 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getIndicatorById, getAllStandards } from '../../../lib/db';
+
+const id = Number(Astro.params.id);
+const [indicator, standards] = await Promise.all([getIndicatorById(id), getAllStandards()]);
+if (!indicator) return Astro.redirect('/indicators');
+
+const basic = standards.filter(s => s.education_level === 'basic');
+const early = standards.filter(s => s.education_level === 'early');
+---
+
+<AdminLayout title="แก้ไขตัวบ่งชี้" activeMenu="indicators">
+  <div class="max-w-2xl">
+    <a href="/indicators" class="flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 mb-6 transition-colors">
+      ← กลับรายการตัวบ่งชี้
+    </a>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h2 class="text-lg font-bold text-gray-800 mb-6">แก้ไขตัวบ่งชี้</h2>
+
+      <div id="successMsg" class="hidden mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+        <p class="text-sm text-green-700">✅ บันทึกการแก้ไขเรียบร้อยแล้ว!</p>
+      </div>
+      <div id="errorMsg" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+        <p class="text-sm text-red-600" id="errorText"></p>
+      </div>
+
+      <form id="indForm" class="space-y-5">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">มาตรฐาน <span class="text-red-500">*</span></label>
+          <select name="standard_id" required
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            {basic.length > 0 && (
+              <optgroup label="การศึกษาขั้นพื้นฐาน">
+                {basic.map(s => <option value={s.id} selected={s.id === indicator.standard_id}>{s.code}: {s.name}</option>)}
+              </optgroup>
+            )}
+            {early.length > 0 && (
+              <optgroup label="ปฐมวัย">
+                {early.map(s => <option value={s.id} selected={s.id === indicator.standard_id}>{s.code}: {s.name}</option>)}
+              </optgroup>
+            )}
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">รหัสตัวบ่งชี้ <span class="text-red-500">*</span></label>
+            <input type="text" name="code" required value={indicator.code}
+                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ลำดับการแสดงผล</label>
+            <input type="number" name="sort_order" value={indicator.sort_order} min="0"
+                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อตัวบ่งชี้ <span class="text-red-500">*</span></label>
+          <input type="text" name="name" required value={indicator.name}
+                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">คำอธิบาย</label>
+          <textarea name="description" rows="2"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{indicator.description}</textarea>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit" id="submitBtn"
+                  class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60">
+            บันทึกการแก้ไข
+          </button>
+          <a href="/indicators" class="px-6 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors text-center">
+            ยกเลิก
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ indId: id }}>
+    const form = document.getElementById('indForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const successMsg = document.getElementById('successMsg');
+    const errorMsg = document.getElementById('errorMsg');
+    const errorText = document.getElementById('errorText');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'กำลังบันทึก...';
+      successMsg.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+
+      const data = Object.fromEntries(new FormData(form));
+      try {
+        const res = await fetch(`/api/indicators/${indId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...data, standard_id: Number(data.standard_id), sort_order: Number(data.sort_order) || 0 }),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          successMsg.classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          errorText.textContent = json.error || 'เกิดข้อผิดพลาด';
+          errorMsg.classList.remove('hidden');
+        }
+      } catch {
+        errorText.textContent = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+        errorMsg.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'บันทึกการแก้ไข';
+      }
+    });
+  </script>
+</AdminLayout>

@@ -2,7 +2,7 @@
 // AdminLayout.astro — โครงสร้างทุกหน้าใน Admin Panel
 interface Props {
   title?: string;
-  activeMenu?: 'dashboard' | 'documents' | 'standards';
+  activeMenu?: 'dashboard' | 'documents' | 'standards' | 'indicators';
 }
 
 const { title = 'Admin Panel', activeMenu } = Astro.props;
@@ -51,6 +51,26 @@ const session = Astro.locals.session;
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                   text-blue-200 hover:bg-blue-800 hover:text-white transition-colors ml-4">
           <span>➕</span> เพิ่มเอกสารใหม่
+        </a>
+        <a href="/standards"
+           class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  ${activeMenu === 'standards' ? 'bg-blue-700 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white'}`}>
+          <span>🏆</span> มาตรฐาน
+        </a>
+        <a href="/standards/new"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                  text-blue-200 hover:bg-blue-800 hover:text-white transition-colors ml-4">
+          <span>➕</span> เพิ่มมาตรฐาน
+        </a>
+        <a href="/indicators"
+           class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  ${activeMenu === 'indicators' ? 'bg-blue-700 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white'}`}>
+          <span>📋</span> ตัวบ่งชี้
+        </a>
+        <a href="/indicators/new"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                  text-blue-200 hover:bg-blue-800 hover:text-white transition-colors ml-4">
+          <span>➕</span> เพิ่มตัวบ่งชี้
         </a>
       </nav>
 

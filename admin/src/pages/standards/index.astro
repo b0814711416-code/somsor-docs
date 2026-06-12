@@ -1,0 +1,116 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAllStandards } from '../../lib/db';
+
+const standards = await getAllStandards();
+const basic = standards.filter(s => s.education_level === 'basic');
+const early = standards.filter(s => s.education_level === 'early');
+---
+
+<AdminLayout title="จัดการมาตรฐาน" activeMenu="standards">
+
+  <div class="flex justify-end mb-6">
+    <a href="/standards/new"
+       class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white
+              text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+      ➕ เพิ่มมาตรฐานใหม่
+    </a>
+  </div>
+
+  <!-- ระดับการศึกษาขั้นพื้นฐาน -->
+  <div class="mb-8">
+    <h2 class="text-base font-bold text-gray-700 mb-3 flex items-center gap-2">
+      <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">ขั้นพื้นฐาน</span>
+      {basic.length} มาตรฐาน
+    </h2>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {basic.length === 0 ? (
+        <div class="text-center py-10 text-gray-400 text-sm">ยังไม่มีมาตรฐานระดับขั้นพื้นฐาน</div>
+      ) : (
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200 text-left">
+              <th class="px-4 py-3 font-semibold text-gray-600">รหัส</th>
+              <th class="px-4 py-3 font-semibold text-gray-600">ชื่อมาตรฐาน</th>
+              <th class="px-4 py-3 font-semibold text-gray-600">ไอคอน</th>
+              <th class="px-4 py-3 font-semibold text-gray-600">ลำดับ</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-right">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {basic.map(s => (
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-bold text-blue-700">{s.code}</td>
+                <td class="px-4 py-3">
+                  <p class="font-medium text-gray-800">{s.name}</p>
+                  {s.description && <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{s.description}</p>}
+                </td>
+                <td class="px-4 py-3 text-xl">{s.icon}</td>
+                <td class="px-4 py-3 text-gray-500">{s.sort_order}</td>
+                <td class="px-4 py-3 text-right space-x-3">
+                  <a href={`/standards/${s.id}/edit`} class="text-blue-600 hover:underline text-xs">แก้ไข</a>
+                  <button class="delete-btn text-red-500 hover:text-red-700 text-xs"
+                          data-id={s.id} data-name={s.name}>ลบ</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </div>
+
+  <!-- ระดับปฐมวัย -->
+  <div>
+    <h2 class="text-base font-bold text-gray-700 mb-3 flex items-center gap-2">
+      <span class="bg-pink-100 text-pink-700 text-xs font-bold px-2.5 py-1 rounded-full">ปฐมวัย</span>
+      {early.length} มาตรฐาน
+    </h2>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {early.length === 0 ? (
+        <div class="text-center py-10 text-gray-400 text-sm">ยังไม่มีมาตรฐานระดับปฐมวัย</div>
+      ) : (
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200 text-left">
+              <th class="px-4 py-3 font-semibold text-gray-600">รหัส</th>
+              <th class="px-4 py-3 font-semibold text-gray-600">ชื่อมาตรฐาน</th>
+              <th class="px-4 py-3 font-semibold text-gray-600">ไอคอน</th>
+              <th class="px-4 py-3 font-semibold text-gray-600">ลำดับ</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-right">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {early.map(s => (
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-bold text-pink-700">{s.code}</td>
+                <td class="px-4 py-3">
+                  <p class="font-medium text-gray-800">{s.name}</p>
+                  {s.description && <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{s.description}</p>}
+                </td>
+                <td class="px-4 py-3 text-xl">{s.icon}</td>
+                <td class="px-4 py-3 text-gray-500">{s.sort_order}</td>
+                <td class="px-4 py-3 text-right space-x-3">
+                  <a href={`/standards/${s.id}/edit`} class="text-blue-600 hover:underline text-xs">แก้ไข</a>
+                  <button class="delete-btn text-red-500 hover:text-red-700 text-xs"
+                          data-id={s.id} data-name={s.name}>ลบ</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </div>
+
+  <script is:inline>
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`ต้องการลบมาตรฐาน "${btn.dataset.name}" ใช่ไหม?\nตัวบ่งชี้และเอกสารที่เชื่อมโยงจะถูกลบด้วย`)) return;
+        const res = await fetch(`/api/standards/${btn.dataset.id}`, { method: 'DELETE' });
+        if (res.ok) { window.location.reload(); }
+        else { alert('เกิดข้อผิดพลาดในการลบ'); }
+      });
+    });
+  </script>
+</AdminLayout>
