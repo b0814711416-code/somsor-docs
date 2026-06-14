@@ -1,0 +1,94 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAllIndicators, getAllStandards } from '../../lib/db';
+import { sql } from '../../lib/db';
+
+const [indicators, standards] = await Promise.all([getAllIndicators(), getAllStandards()]);
+
+const basicStdIds = new Set(standards.filter(s => s.education_level === 'basic').map(s => s.id));
+const earlyStdIds = new Set(standards.filter(s => s.education_level === 'early').map(s => s.id));
+
+const basicInds = indicators.filter(i => basicStdIds.has(i.standard_id));
+const earlyInds = indicators.filter(i => earlyStdIds.has(i.standard_id));
+
+// ดึงจำนวน album + รูปของแต่ละตัวชี้วัด
+const albumCounts = await sql`
+  SELECT a.indicator_id,
+         COUNT(DISTINCT a.id)  AS album_count,
+         COUNT(p.id)           AS photo_count
+  FROM indicator_albums a
+  LEFT JOIN indicator_photos p ON p.album_id = a.id
+  GROUP BY a.indicator_id
+` as { indicator_id: number; album_count: string; photo_count: string }[];
+
+const countMap = new Map(albumCounts.map(r => [r.indicator_id, { albums: Number(r.album_count), photos: Number(r.photo_count) }]));
+---
+
+<AdminLayout title="คลังภาพ" activeMenu="albums">
+
+  {[
+    { label: 'ขั้นพื้นฐาน', inds: basicInds, color: 'blue' },
+    { label: 'ปฐมวัย',     inds: earlyInds, color: 'pink' },
+  ].map(({ label, inds, color }) => (
+    <div class="mb-8">
+      <h2 class="text-base font-bold text-gray-700 mb-3 flex items-center gap-2">
+        <span class={`bg-${color}-100 text-${color}-700 text-xs font-bold px-2.5 py-1 rounded-full`}>{label}</span>
+        {inds.length} ตัวชี้วัด
+      </h2>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {inds.length === 0 ? (
+          <div class="text-center py-10 text-gray-400 text-sm">ยังไม่มีตัวชี้วัด</div>
+        ) : (
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-200 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-600">รหัส</th>
+                <th class="px-4 py-3 font-semibold text-gray-600">ชื่อตัวชี้วัด</th>
+                <th class="px-4 py-3 font-semibold text-gray-600">คลัง</th>
+                <th class="px-4 py-3 font-semibold text-gray-600">รูปภาพ</th>
+                <th class="px-4 py-3 font-semibold text-gray-600 text-right">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              {inds.map(i => {
+                const cnt = countMap.get(i.id);
+                return (
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3 font-bold text-gray-700">{i.code}</td>
+                    <td class="px-4 py-3">
+                      <p class="font-medium text-gray-800">{i.name}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                      {cnt ? (
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full bg-purple-100 text-purple-700">
+                          {cnt.albums} คลัง
+                        </span>
+                      ) : (
+                        <span class="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td class="px-4 py-3">
+                      {cnt?.photos ? (
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700">
+                          {cnt.photos} รูป
+                        </span>
+                      ) : (
+                        <span class="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <a href={`/indicators/${i.id}/albums`}
+                         class="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 px-3 py-1.5 rounded-lg transition-colors">
+                        📷 จัดการคลังภาพ
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  ))}
+</AdminLayout>

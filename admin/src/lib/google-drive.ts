@@ -132,3 +132,40 @@ export async function uploadDocumentFile(
 
   return uploadFileToDrive(file, indicatorFolderId, token);
 }
+
+/**
+ * สร้าง/หา folder สำหรับคลังภาพ ภายใต้ตัวชี้วัด
+ * โครงสร้าง: Root → ขั้นพื้นฐาน|ปฐมวัย → {code} {name} → 📷 {albumName}
+ * Return: folder_id ของ album ที่ใช้เก็บไว้ใน DB
+ */
+export async function getOrCreateAlbumFolder(
+  level: 'basic' | 'early',
+  indicatorCode: string,
+  indicatorName: string,
+  albumName: string,
+): Promise<string> {
+  const rootId = import.meta.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
+  if (!rootId) throw new Error('GOOGLE_DRIVE_ROOT_FOLDER_ID is not set');
+
+  const token = await getDriveToken();
+
+  const levelName = level === 'early' ? 'ปฐมวัย' : 'ขั้นพื้นฐาน';
+  const levelFolderId = await findOrCreateFolder(levelName, rootId, token);
+
+  const indicatorFolderName = `${indicatorCode} ${indicatorName}`;
+  const indicatorFolderId = await findOrCreateFolder(indicatorFolderName, levelFolderId, token);
+
+  const albumFolderId = await findOrCreateFolder(`📷 ${albumName}`, indicatorFolderId, token);
+  return albumFolderId;
+}
+
+/** อัปโหลดรูปภาพไปยัง album folder, return { fileId, webViewLink, thumbnailUrl } */
+export async function uploadPhotoToDrive(
+  file: File,
+  albumFolderId: string,
+): Promise<{ fileId: string; webViewLink: string; thumbnailUrl: string }> {
+  const token = await getDriveToken();
+  const { fileId, webViewLink } = await uploadFileToDrive(file, albumFolderId, token);
+  const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
+  return { fileId, webViewLink, thumbnailUrl };
+}

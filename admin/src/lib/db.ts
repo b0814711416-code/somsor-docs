@@ -274,3 +274,72 @@ export async function deleteAdminUser(id: number): Promise<boolean> {
   const rows = await sql`DELETE FROM admin_users WHERE id = ${id} RETURNING id`;
   return rows.length > 0;
 }
+
+// --------- Albums & Photos ---------
+
+export interface Album {
+  id: number; indicator_id: number; name: string;
+  folder_id: string; created_at: string;
+  indicator_code?: string; indicator_name?: string;
+  photos?: Photo[];
+}
+
+export interface Photo {
+  id: number; album_id: number; file_id: string;
+  url: string; sort_order: number; uploaded_at: string;
+}
+
+export async function getAlbumsByIndicator(indicatorId: number): Promise<Album[]> {
+  const albums = await sql`
+    SELECT a.*, i.code AS indicator_code, i.name AS indicator_name
+    FROM indicator_albums a
+    JOIN indicators i ON i.id = a.indicator_id
+    WHERE a.indicator_id = ${indicatorId}
+    ORDER BY a.created_at DESC
+  ` as Album[];
+
+  for (const album of albums) {
+    album.photos = await sql`
+      SELECT * FROM indicator_photos WHERE album_id = ${album.id}
+      ORDER BY sort_order, uploaded_at
+    ` as Photo[];
+  }
+  return albums;
+}
+
+export async function createAlbum(data: {
+  indicator_id: number; name: string; folder_id: string;
+}): Promise<Album> {
+  const rows = await sql`
+    INSERT INTO indicator_albums (indicator_id, name, folder_id)
+    VALUES (${data.indicator_id}, ${data.name}, ${data.folder_id})
+    RETURNING *
+  ` as Album[];
+  return rows[0];
+}
+
+export async function deleteAlbum(id: number): Promise<boolean> {
+  const rows = await sql`DELETE FROM indicator_albums WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
+}
+
+export async function addPhoto(data: {
+  album_id: number; file_id: string; url: string; sort_order?: number;
+}): Promise<Photo> {
+  const rows = await sql`
+    INSERT INTO indicator_photos (album_id, file_id, url, sort_order)
+    VALUES (${data.album_id}, ${data.file_id}, ${data.url}, ${data.sort_order ?? 0})
+    RETURNING *
+  ` as Photo[];
+  return rows[0];
+}
+
+export async function countPhotos(albumId: number): Promise<number> {
+  const rows = await sql`SELECT COUNT(*) AS cnt FROM indicator_photos WHERE album_id = ${albumId}`;
+  return Number((rows[0] as any).cnt);
+}
+
+export async function deletePhoto(id: number): Promise<boolean> {
+  const rows = await sql`DELETE FROM indicator_photos WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
+}

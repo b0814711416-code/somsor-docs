@@ -55,6 +55,7 @@ const earlyInds = indicators.filter(i => earlyStdIds.has(i.standard_id));
                   <td class="px-4 py-3 text-xs text-gray-500">{i.standard_name}</td>
                   <td class="px-4 py-3 text-gray-500">{i.sort_order}</td>
                   <td class="px-4 py-3 text-right space-x-3">
+                    <a href={`/indicators/${i.id}/albums`} class="text-purple-600 hover:underline text-xs">คลังภาพ</a>
                     <a href={`/indicators/${i.id}/edit`} class="text-blue-600 hover:underline text-xs">แก้ไข</a>
                     <button class="delete-btn text-red-500 hover:text-red-700 text-xs"
                             data-id={i.id} data-name={i.name}>ลบ</button>

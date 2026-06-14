@@ -1,6 +1,18 @@
 ---
 import DocumentLink from './DocumentLink.astro';
 
+interface Photo {
+  id: number;
+  file_id: string;
+  url: string;
+}
+
+interface Album {
+  id: number;
+  name: string;
+  photos: Photo[];
+}
+
 interface Document {
   id: number;
   title: string;
@@ -14,18 +26,19 @@ interface Props {
   name: string;
   description?: string | null;
   documents: Document[];
+  albums?: Album[];
 }
 
-const { code, name, description, documents } = Astro.props;
+const { code, name, description, documents, albums = [] } = Astro.props;
 const activeDocs = documents?.filter(d => d) ?? [];
 const hasDocuments = activeDocs.length > 0;
+const hasAlbums = albums.some(a => a.photos?.length > 0);
 ---
 
 <div class="mb-5 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
   <!-- หัวตัวชี้วัด -->
-  <div class={`px-5 py-4 flex items-start gap-4 border-b ${hasDocuments ? 'border-gray-200 bg-gray-50' : 'border-dashed border-gray-200 bg-gray-50/50'}`}>
-    <!-- รหัส badge -->
+  <div class={`px-5 py-4 flex items-start gap-4 border-b ${(hasDocuments || hasAlbums) ? 'border-gray-200 bg-gray-50' : 'border-dashed border-gray-200 bg-gray-50/50'}`}>
     <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center
                 text-white text-sm font-bold shadow-sm">
       {code}
@@ -35,14 +48,20 @@ const hasDocuments = activeDocs.length > 0;
         <h3 class="text-sm font-bold text-gray-800 leading-snug">
           ตัวชี้วัดที่ {code}: {name}
         </h3>
-        <!-- จำนวนเอกสาร -->
-        <span class={`flex-shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${
-          hasDocuments
-            ? 'bg-green-100 text-green-700 border border-green-200'
-            : 'bg-gray-100 text-gray-400 border border-gray-200'
-        }`}>
-          {hasDocuments ? `${activeDocs.length} เอกสาร` : 'ยังไม่มีเอกสาร'}
-        </span>
+        <div class="flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
+          <span class={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+            hasDocuments
+              ? 'bg-green-100 text-green-700 border border-green-200'
+              : 'bg-gray-100 text-gray-400 border border-gray-200'
+          }`}>
+            {hasDocuments ? `${activeDocs.length} เอกสาร` : 'ยังไม่มีเอกสาร'}
+          </span>
+          {hasAlbums && (
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+              {albums.reduce((sum, a) => sum + (a.photos?.length ?? 0), 0)} ภาพ
+            </span>
+          )}
+        </div>
       </div>
       {description && (
         <p class="text-xs text-gray-500 mt-1 leading-relaxed">{description}</p>
@@ -50,8 +69,10 @@ const hasDocuments = activeDocs.length > 0;
     </div>
   </div>
 
-  <!-- รายการเอกสาร -->
-  <div class="p-4">
+  <!-- เนื้อหา -->
+  <div class="p-4 space-y-4">
+
+    <!-- รายการเอกสาร -->
     {hasDocuments ? (
       <div class="grid gap-2 sm:grid-cols-2">
         {activeDocs.map((doc) => (
@@ -64,10 +85,34 @@ const hasDocuments = activeDocs.length > 0;
         ))}
       </div>
     ) : (
-      <div class="flex items-center gap-2 py-3 px-2">
+      <div class="flex items-center gap-2 py-2 px-2">
         <div class="w-1 h-8 bg-gray-200 rounded-full"></div>
         <p class="text-sm text-gray-400 italic">ยังไม่มีเอกสารหลักฐานในตัวชี้วัดนี้</p>
       </div>
     )}
+
+    <!-- คลังภาพ -->
+    {albums.filter(a => a.photos?.length > 0).map(album => (
+      <div>
+        <p class="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1">
+          <span>📷</span>
+          <span>{album.name}</span>
+          <span class="text-gray-400 font-normal">({album.photos.length} รูป)</span>
+        </p>
+        <div class="grid grid-cols-5 gap-1.5">
+          {album.photos.map(photo => (
+            <a href={`https://drive.google.com/file/d/${photo.file_id}/view`}
+               target="_blank" rel="noopener noreferrer"
+               class="block aspect-square rounded-lg overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity ring-1 ring-gray-200">
+              <img src={photo.url}
+                   alt={album.name}
+                   loading="lazy"
+                   class="w-full h-full object-cover"/>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+
   </div>
 </div>

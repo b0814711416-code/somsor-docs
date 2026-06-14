@@ -2,7 +2,7 @@
 // AdminLayout.astro — โครงสร้างทุกหน้าใน Admin Panel
 interface Props {
   title?: string;
-  activeMenu?: 'dashboard' | 'documents' | 'standards' | 'indicators' | 'users';
+  activeMenu?: 'dashboard' | 'documents' | 'standards' | 'indicators' | 'albums' | 'users';
 }
 
 const { title = 'Admin Panel', activeMenu } = Astro.props;
@@ -81,6 +81,11 @@ const session = Astro.locals.session;
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                   text-pink-300 hover:bg-pink-900 hover:text-white transition-colors ml-4">
           <span>➕</span> เพิ่มตัวชี้วัด (ปฐมวัย)
+        </a>
+        <a href="/albums"
+           class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  ${activeMenu === 'albums' ? 'bg-purple-700 text-white' : 'text-purple-300 hover:bg-purple-900 hover:text-white'}`}>
+          <span>📷</span> คลังภาพ
         </a>
         {session?.role === 'admin' && (
           <a href="/users"

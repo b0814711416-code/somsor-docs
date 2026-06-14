@@ -43,6 +43,19 @@ export interface Document {
   sort_order: number;
 }
 
+export interface Photo {
+  id: number;
+  file_id: string;
+  url: string;
+  sort_order: number;
+}
+
+export interface Album {
+  id: number;
+  name: string;
+  photos: Photo[];
+}
+
 // --------- Query Functions ---------
 
 /** ดึงมาตรฐานทั้งหมด เรียงตาม sort_order */
@@ -151,6 +164,21 @@ export async function getStandardByCode(code: string) {
       ORDER BY sort_order, id
     ` as Document[];
     (indicator as any).documents = docs;
+
+    const albumRows = await sql`
+      SELECT id, name FROM indicator_albums
+      WHERE indicator_id = ${indicator.id}
+      ORDER BY created_at ASC
+    ` as Album[];
+
+    for (const album of albumRows) {
+      album.photos = await sql`
+        SELECT id, file_id, url, sort_order FROM indicator_photos
+        WHERE album_id = ${album.id}
+        ORDER BY sort_order, uploaded_at
+      ` as Photo[];
+    }
+    (indicator as any).albums = albumRows;
   }
 
   return { ...standard, indicators };
