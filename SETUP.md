@@ -52,7 +52,26 @@
    - `GITHUB_ACTIONS_TOKEN` = GitHub Personal Access Token (ดูขั้นตอน 3a)
    - `GITHUB_OWNER` = GitHub username
    - `GITHUB_REPO` = ชื่อ repo
+   - `GOOGLE_CLIENT_ID` = ใช้ค่าเดียวกับระบบนโยบาย สพฐ.
+   - `GOOGLE_CLIENT_SECRET` = ใช้ค่าเดียวกับระบบนโยบาย สพฐ.
+   - `GOOGLE_REFRESH_TOKEN` = ใช้ค่าเดียวกับระบบนโยบาย สพฐ.
+   - `GOOGLE_DRIVE_ROOT_FOLDER_ID` = ID ของ folder สมศ. ใน Google Drive (ดูขั้นตอน 3b)
 5. กด **Deploy**
+
+### ขั้นตอนที่ 3b — ตั้งค่า Google Drive สำหรับอัปโหลดไฟล์อัตโนมัติ
+
+> **ใช้ credentials เดียวกับระบบนโยบาย สพฐ.** — คัดลอก `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` จาก Vercel project นโยบาย สพฐ. มาใส่ได้เลย
+
+#### สร้าง Root Folder ใน Google Drive
+1. เปิด Google Drive → สร้าง Folder ใหม่ เช่น `📁 สมศ. รอบ 5 - ชื่อโรงเรียน`
+2. เปิด Folder นั้น → Copy **Folder ID** จาก URL:
+   `https://drive.google.com/drive/folders/`**`xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`**
+
+#### ใส่ค่าใน Vercel
+- `GOOGLE_CLIENT_ID` = ค่าเดียวกับระบบนโยบาย สพฐ.
+- `GOOGLE_CLIENT_SECRET` = ค่าเดียวกับระบบนโยบาย สพฐ.
+- `GOOGLE_REFRESH_TOKEN` = ค่าเดียวกับระบบนโยบาย สพฐ.
+- `GOOGLE_DRIVE_ROOT_FOLDER_ID` = Folder ID จากข้อ 2
 
 ### ขั้นตอนที่ 3a — สร้าง GitHub Token สำหรับ Admin
 

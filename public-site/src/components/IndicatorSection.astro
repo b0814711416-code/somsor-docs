@@ -1,5 +1,4 @@
 ---
-// IndicatorSection.astro — แสดงตัวชี้วัด 1 ตัว พร้อมเอกสารทั้งหมด
 import DocumentLink from './DocumentLink.astro';
 
 interface Document {
@@ -18,33 +17,44 @@ interface Props {
 }
 
 const { code, name, description, documents } = Astro.props;
-const activeDocuments = documents?.filter(d => d) ?? [];
+const activeDocs = documents?.filter(d => d) ?? [];
+const hasDocuments = activeDocs.length > 0;
 ---
 
-<div class="mb-6 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+<div class="mb-5 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
-  <!-- Indicator Header -->
-  <div class="bg-gray-50 border-b border-gray-200 px-5 py-3 flex items-start gap-3">
-    <!-- รหัสตัวชี้วัด badge -->
-    <span class="mt-0.5 flex-shrink-0 inline-flex items-center justify-center
-                 w-9 h-9 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm">
+  <!-- หัวตัวชี้วัด -->
+  <div class={`px-5 py-4 flex items-start gap-4 border-b ${hasDocuments ? 'border-gray-200 bg-gray-50' : 'border-dashed border-gray-200 bg-gray-50/50'}`}>
+    <!-- รหัส badge -->
+    <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center
+                text-white text-sm font-bold shadow-sm">
       {code}
-    </span>
-    <div>
-      <h3 class="font-semibold text-gray-800 leading-snug">
-        ตัวชี้วัดที่ {code}: {name}
-      </h3>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-start justify-between gap-3">
+        <h3 class="text-sm font-bold text-gray-800 leading-snug">
+          ตัวชี้วัดที่ {code}: {name}
+        </h3>
+        <!-- จำนวนเอกสาร -->
+        <span class={`flex-shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${
+          hasDocuments
+            ? 'bg-green-100 text-green-700 border border-green-200'
+            : 'bg-gray-100 text-gray-400 border border-gray-200'
+        }`}>
+          {hasDocuments ? `${activeDocs.length} เอกสาร` : 'ยังไม่มีเอกสาร'}
+        </span>
+      </div>
       {description && (
-        <p class="text-sm text-gray-500 mt-0.5 leading-relaxed">{description}</p>
+        <p class="text-xs text-gray-500 mt-1 leading-relaxed">{description}</p>
       )}
     </div>
   </div>
 
-  <!-- Document List -->
+  <!-- รายการเอกสาร -->
   <div class="p-4">
-    {activeDocuments.length > 0 ? (
+    {hasDocuments ? (
       <div class="grid gap-2 sm:grid-cols-2">
-        {activeDocuments.map((doc) => (
+        {activeDocs.map((doc) => (
           <DocumentLink
             title={doc.title}
             url={doc.url}
@@ -54,18 +64,10 @@ const activeDocuments = documents?.filter(d => d) ?? [];
         ))}
       </div>
     ) : (
-      <p class="text-sm text-gray-400 italic py-2 text-center">
-        — ยังไม่มีเอกสารหลักฐาน —
-      </p>
+      <div class="flex items-center gap-2 py-3 px-2">
+        <div class="w-1 h-8 bg-gray-200 rounded-full"></div>
+        <p class="text-sm text-gray-400 italic">ยังไม่มีเอกสารหลักฐานในตัวชี้วัดนี้</p>
+      </div>
     )}
   </div>
-
-  <!-- สรุปจำนวนเอกสาร -->
-  {activeDocuments.length > 0 && (
-    <div class="bg-gray-50 border-t border-gray-100 px-5 py-2">
-      <p class="text-xs text-gray-400">
-        เอกสารทั้งหมด {activeDocuments.length} รายการ
-      </p>
-    </div>
-  )}
 </div>

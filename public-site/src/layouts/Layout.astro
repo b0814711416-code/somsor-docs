@@ -1,5 +1,4 @@
 ---
-// Layout.astro — โครงสร้างหน้าเว็บทุกหน้า
 interface Props {
   title?: string;
   description?: string;
@@ -7,13 +6,16 @@ interface Props {
 
 const {
   title = 'ระบบเอกสารหลักฐาน สมศ. รอบห้า',
-  description = 'ระบบจัดเก็บและแสดงผลลิงก์เอกสารหลักฐานเพื่อรับการประเมินภายนอก สมศ. รอบห้า'
+  description = 'ระบบจัดเก็บและแสดงผลเอกสารหลักฐานเพื่อรับการประเมินภายนอก สมศ. รอบห้า'
 } = Astro.props;
 
-// อ่านชื่อโรงเรียนจาก environment variable (ตั้งค่าใน .env หรือ GitHub Secrets)
-const schoolName = import.meta.env.SCHOOL_NAME || 'โรงเรียนของท่าน';
+const schoolName    = import.meta.env.SCHOOL_NAME    || 'โรงเรียนของท่าน';
 const schoolSubtitle = import.meta.env.SCHOOL_SUBTITLE || 'สำนักงานเขตพื้นที่การศึกษา';
 const BASE = import.meta.env.BASE_URL;
+
+const buildDate = new Date().toLocaleDateString('th-TH', {
+  year: 'numeric', month: 'long', day: 'numeric'
+});
 ---
 
 <!DOCTYPE html>
@@ -22,60 +24,88 @@ const BASE = import.meta.env.BASE_URL;
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={description} />
+  <meta name="robots" content="noindex, nofollow" />
   <title>{title}</title>
-
-  <!-- Google Fonts: Sarabun (ฟอนต์ภาษาไทย สะอาด อ่านง่าย) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-  <!-- ป้องกัน indexing — ไม่ต้องการให้ Google index หน้านี้ -->
-  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Sarabun', sans-serif; }
+  </style>
 </head>
 
-<body class="min-h-screen bg-gray-50 font-sans antialiased">
+<body class="min-h-screen bg-slate-50 antialiased">
 
-  <!-- ===== HEADER ===== -->
-  <header class="bg-blue-900 text-white shadow-lg">
-    <div class="max-w-6xl mx-auto px-4 py-4">
-      <div class="flex items-center gap-4">
-        <!-- Logo / Seal placeholder -->
-        <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
-          🏫
+  <!-- แถบบนสุด: ข้อมูลทางการ -->
+  <div class="bg-blue-950 text-blue-200 text-xs py-1.5 border-b border-blue-900">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between gap-4">
+      <span>กระทรวงศึกษาธิการ • สำนักงานรับรองมาตรฐานและประเมินคุณภาพการศึกษา (สมศ.)</span>
+      <span class="hidden sm:block">ข้อมูล ณ วันที่ {buildDate}</span>
+    </div>
+  </div>
+
+  <!-- Header หลัก -->
+  <header class="bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl">
+    <div class="max-w-6xl mx-auto px-4 py-5">
+      <div class="flex items-center gap-5">
+        <!-- ตราสัญลักษณ์ -->
+        <div class="flex-shrink-0">
+          <div class="w-16 h-16 rounded-full bg-white/10 ring-2 ring-white/30
+                      flex items-center justify-center text-3xl shadow-inner">
+            🏫
+          </div>
         </div>
-        <div>
-          <h1 class="text-lg font-bold leading-tight">{schoolName}</h1>
-          <p class="text-blue-200 text-sm">{schoolSubtitle}</p>
-          <div class="mt-1 flex items-center gap-2">
-            <span class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-0.5 rounded-full">
+
+        <!-- ชื่อโรงเรียน -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-amber-400 text-amber-900 text-xs font-bold px-2.5 py-0.5 rounded tracking-wide">
               สมศ. รอบห้า
             </span>
-            <span class="text-blue-300 text-xs">ระบบเอกสารหลักฐานการประเมินภายนอก</span>
+            <span class="text-blue-300 text-xs">การประเมินคุณภาพภายนอก</span>
           </div>
+          <h1 class="text-xl sm:text-2xl font-bold leading-tight truncate">{schoolName}</h1>
+          <p class="text-blue-300 text-sm mt-0.5">{schoolSubtitle}</p>
+        </div>
+
+        <!-- Label เอกสารหลักฐาน -->
+        <div class="hidden md:block text-right flex-shrink-0">
+          <p class="text-blue-300 text-xs uppercase tracking-widest">ระบบเอกสารหลักฐาน</p>
+          <p class="text-white text-sm font-semibold">การประเมินภายนอก</p>
         </div>
       </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="bg-blue-800 border-t border-blue-700">
+    <!-- Navbar -->
+    <nav class="bg-blue-950/50 border-t border-blue-700/50 backdrop-blur-sm">
       <div class="max-w-6xl mx-auto px-4">
-        <ul class="flex gap-1 overflow-x-auto">
+        <ul class="flex gap-0.5 overflow-x-auto py-1">
           <li>
             <a href={BASE + '/'}
-               class="inline-block px-4 py-2.5 text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-700 rounded-t transition-colors whitespace-nowrap">
-              🏠 หน้าหลัก
+               class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium
+                      text-blue-200 hover:text-white hover:bg-white/10 rounded-md
+                      transition-colors whitespace-nowrap">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              หน้าหลัก
             </a>
           </li>
           <li>
             <a href={BASE + '/basic'}
-               class="inline-block px-4 py-2.5 text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-700 rounded-t transition-colors whitespace-nowrap">
-              🎓 ขั้นพื้นฐาน
+               class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium
+                      text-blue-200 hover:text-white hover:bg-white/10 rounded-md
+                      transition-colors whitespace-nowrap">
+              🎓 ระดับขั้นพื้นฐาน
             </a>
           </li>
           <li>
             <a href={BASE + '/early'}
-               class="inline-block px-4 py-2.5 text-sm font-medium text-pink-200 hover:text-white hover:bg-pink-700 rounded-t transition-colors whitespace-nowrap">
-              🌸 ปฐมวัย
+               class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium
+                      text-pink-200 hover:text-white hover:bg-pink-900/40 rounded-md
+                      transition-colors whitespace-nowrap">
+              🌸 ระดับปฐมวัย
             </a>
           </li>
         </ul>
@@ -83,17 +113,29 @@ const BASE = import.meta.env.BASE_URL;
     </nav>
   </header>
 
-  <!-- ===== MAIN CONTENT ===== -->
+  <!-- เนื้อหา -->
   <main class="max-w-6xl mx-auto px-4 py-8">
     <slot />
   </main>
 
-  <!-- ===== FOOTER ===== -->
-  <footer class="mt-16 bg-gray-800 text-gray-400 text-center py-6 text-sm">
-    <p>{schoolName} • ระบบเอกสารหลักฐาน สมศ. รอบห้า</p>
-    <p class="text-xs mt-1 text-gray-500">
-      อัปเดตล่าสุด: <span id="build-date">{new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-    </p>
+  <!-- Footer -->
+  <footer class="mt-16 border-t border-gray-200 bg-white">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="text-center sm:text-left">
+          <p class="text-sm font-semibold text-gray-700">{schoolName}</p>
+          <p class="text-xs text-gray-500 mt-0.5">{schoolSubtitle}</p>
+        </div>
+        <div class="text-center">
+          <p class="text-xs text-gray-400">ระบบเอกสารหลักฐาน การประเมินคุณภาพภายนอก สมศ. รอบห้า</p>
+          <p class="text-xs text-gray-400 mt-0.5">ข้อมูล ณ วันที่ {buildDate}</p>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-2 h-2 rounded-full bg-green-500"></div>
+          <span class="text-xs text-gray-500">พร้อมรับการประเมิน</span>
+        </div>
+      </div>
+    </div>
   </footer>
 
 </body>

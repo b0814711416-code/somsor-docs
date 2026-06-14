@@ -4,86 +4,183 @@ import { getLevelStats } from '../lib/db';
 
 const stats = await getLevelStats();
 const BASE = import.meta.env.BASE_URL;
+const schoolName = import.meta.env.SCHOOL_NAME || 'โรงเรียนของท่าน';
 ---
 
-<Layout title="ระบบเอกสารหลักฐาน สมศ. รอบห้า — เลือกระดับการศึกษา">
+<Layout title="ระบบเอกสารหลักฐาน สมศ. รอบห้า">
 
-  <div class="min-h-[60vh] flex flex-col items-center justify-center py-12">
-
-    <div class="text-center mb-10">
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">เลือกระดับการศึกษา</h1>
-      <p class="text-gray-500">กรุณาเลือกระดับการศึกษาที่ต้องการประเมิน</p>
+  <!-- Hero: ข้อมูลทางการ -->
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 mb-8">
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-2xl">
+        📋
+      </div>
+      <div>
+        <div class="flex items-center gap-2 mb-1 flex-wrap">
+          <span class="bg-blue-700 text-white text-xs font-bold px-3 py-0.5 rounded-full tracking-wide">
+            สมศ. รอบห้า
+          </span>
+          <span class="text-gray-400 text-xs">|</span>
+          <span class="text-gray-600 text-xs">การประเมินคุณภาพภายนอก</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 leading-snug">
+          เอกสารหลักฐานการประเมินคุณภาพ
+        </h2>
+        <p class="text-gray-500 text-sm mt-1 leading-relaxed">
+          รวบรวมเอกสารหลักฐานตามมาตรฐานและตัวชี้วัด สำหรับการรับการประเมินคุณภาพภายนอก
+          โดยสำนักงานรับรองมาตรฐานและประเมินคุณภาพการศึกษา (สมศ.) รอบห้า
+        </p>
+      </div>
     </div>
 
-    <div class="grid sm:grid-cols-2 gap-6 w-full max-w-2xl">
+    <!-- สถิติรวม -->
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-6 pt-5 border-t border-gray-100">
+      <div class="col-span-1 text-center sm:col-span-1">
+        <p class="text-2xl font-bold text-blue-700">{stats.basic.standards + stats.early.standards}</p>
+        <p class="text-xs text-gray-500 mt-0.5">มาตรฐานรวม</p>
+      </div>
+      <div class="col-span-1 text-center">
+        <p class="text-2xl font-bold text-blue-700">{stats.basic.indicators + stats.early.indicators}</p>
+        <p class="text-xs text-gray-500 mt-0.5">ตัวชี้วัดรวม</p>
+      </div>
+      <div class="col-span-1 text-center">
+        <p class="text-2xl font-bold text-green-600">{stats.basic.documents + stats.early.documents}</p>
+        <p class="text-xs text-gray-500 mt-0.5">เอกสารรวม</p>
+      </div>
+      <div class="hidden sm:block col-span-1 border-l border-gray-100"></div>
+      <div class="hidden sm:block col-span-1 text-center">
+        <p class="text-2xl font-bold text-gray-700">{stats.basic.documents}</p>
+        <p class="text-xs text-gray-500 mt-0.5">เอกสารขั้นพื้นฐาน</p>
+      </div>
+      <div class="hidden sm:block col-span-1 text-center">
+        <p class="text-2xl font-bold text-gray-700">{stats.early.documents}</p>
+        <p class="text-xs text-gray-500 mt-0.5">เอกสารปฐมวัย</p>
+      </div>
+    </div>
+  </div>
 
-      <!-- ขั้นพื้นฐาน -->
-      <a href={BASE + '/basic'}
-         class="group block bg-white rounded-2xl border-2 border-blue-200 hover:border-blue-500
-                hover:shadow-xl hover:shadow-blue-100 transition-all duration-200 p-8 text-center">
-        <div class="text-5xl mb-4">🎓</div>
-        <h2 class="text-lg font-bold text-gray-800 group-hover:text-blue-700 transition-colors mb-1">
+  <!-- เลือกระดับการศึกษา -->
+  <p class="text-sm font-semibold text-gray-600 uppercase tracking-widest mb-4">
+    เลือกระดับการศึกษา
+  </p>
+
+  <div class="grid sm:grid-cols-2 gap-5">
+
+    <!-- ขั้นพื้นฐาน -->
+    <a href={BASE + '/basic'}
+       class="group relative block bg-white rounded-2xl border-2 border-blue-200
+              hover:border-blue-500 hover:shadow-xl hover:shadow-blue-100/60
+              transition-all duration-200 overflow-hidden">
+      <!-- แถบสีด้านบน -->
+      <div class="h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+      <div class="p-7">
+        <div class="flex items-center justify-between mb-5">
+          <div class="text-5xl">🎓</div>
+          <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold
+                       px-3 py-1 rounded-full">
+            Basic Education
+          </span>
+        </div>
+        <h2 class="text-lg font-bold text-gray-800 group-hover:text-blue-700
+                   transition-colors leading-snug mb-1">
           ระดับการศึกษาขั้นพื้นฐาน
         </h2>
-        <p class="text-sm text-gray-500 mb-6">Basic Education</p>
-        <div class="flex justify-center gap-6 text-center">
-          <div>
-            <p class="text-2xl font-bold text-blue-600">{stats.basic.standards}</p>
-            <p class="text-xs text-gray-400">มาตรฐาน</p>
+        <p class="text-sm text-gray-500 mb-5">
+          มาตรฐานและตัวชี้วัดสำหรับการศึกษาขั้นพื้นฐาน
+        </p>
+
+        <!-- สถิติ -->
+        <div class="grid grid-cols-3 gap-3 mb-5">
+          <div class="text-center bg-blue-50 rounded-lg py-2">
+            <p class="text-xl font-bold text-blue-700">{stats.basic.standards}</p>
+            <p class="text-xs text-gray-500 mt-0.5">มาตรฐาน</p>
           </div>
-          <div class="w-px bg-gray-200"></div>
-          <div>
-            <p class="text-2xl font-bold text-blue-600">{stats.basic.indicators}</p>
-            <p class="text-xs text-gray-400">ตัวชี้วัด</p>
+          <div class="text-center bg-blue-50 rounded-lg py-2">
+            <p class="text-xl font-bold text-blue-700">{stats.basic.indicators}</p>
+            <p class="text-xs text-gray-500 mt-0.5">ตัวชี้วัด</p>
           </div>
-          <div class="w-px bg-gray-200"></div>
-          <div>
-            <p class="text-2xl font-bold text-blue-600">{stats.basic.documents}</p>
-            <p class="text-xs text-gray-400">เอกสาร</p>
+          <div class="text-center bg-blue-50 rounded-lg py-2">
+            <p class="text-xl font-bold text-green-600">{stats.basic.documents}</p>
+            <p class="text-xs text-gray-500 mt-0.5">เอกสาร</p>
           </div>
         </div>
-        <div class="mt-6">
-          <span class="inline-flex items-center gap-2 bg-blue-600 group-hover:bg-blue-700
-                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
-            เข้าดูเอกสาร →
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-semibold text-blue-700 group-hover:text-blue-800">
+            เข้าดูเอกสาร
+          </span>
+          <div class="w-8 h-8 rounded-full bg-blue-600 group-hover:bg-blue-700
+                      flex items-center justify-center transition-colors">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- ปฐมวัย -->
+    <a href={BASE + '/early'}
+       class="group relative block bg-white rounded-2xl border-2 border-pink-200
+              hover:border-pink-500 hover:shadow-xl hover:shadow-pink-100/60
+              transition-all duration-200 overflow-hidden">
+      <div class="h-2 bg-gradient-to-r from-pink-500 to-pink-400"></div>
+      <div class="p-7">
+        <div class="flex items-center justify-between mb-5">
+          <div class="text-5xl">🌸</div>
+          <span class="bg-pink-50 border border-pink-200 text-pink-700 text-xs font-bold
+                       px-3 py-1 rounded-full">
+            Early Childhood
           </span>
         </div>
-      </a>
-
-      <!-- ปฐมวัย -->
-      <a href={BASE + '/early'}
-         class="group block bg-white rounded-2xl border-2 border-pink-200 hover:border-pink-500
-                hover:shadow-xl hover:shadow-pink-100 transition-all duration-200 p-8 text-center">
-        <div class="text-5xl mb-4">🌸</div>
-        <h2 class="text-lg font-bold text-gray-800 group-hover:text-pink-700 transition-colors mb-1">
+        <h2 class="text-lg font-bold text-gray-800 group-hover:text-pink-700
+                   transition-colors leading-snug mb-1">
           ระดับปฐมวัย
         </h2>
-        <p class="text-sm text-gray-500 mb-6">Early Childhood Education</p>
-        <div class="flex justify-center gap-6 text-center">
-          <div>
-            <p class="text-2xl font-bold text-pink-600">{stats.early.standards}</p>
-            <p class="text-xs text-gray-400">มาตรฐาน</p>
-          </div>
-          <div class="w-px bg-gray-200"></div>
-          <div>
-            <p class="text-2xl font-bold text-pink-600">{stats.early.indicators}</p>
-            <p class="text-xs text-gray-400">ตัวชี้วัด</p>
-          </div>
-          <div class="w-px bg-gray-200"></div>
-          <div>
-            <p class="text-2xl font-bold text-pink-600">{stats.early.documents}</p>
-            <p class="text-xs text-gray-400">เอกสาร</p>
-          </div>
-        </div>
-        <div class="mt-6">
-          <span class="inline-flex items-center gap-2 bg-pink-600 group-hover:bg-pink-700
-                       text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
-            เข้าดูเอกสาร →
-          </span>
-        </div>
-      </a>
+        <p class="text-sm text-gray-500 mb-5">
+          มาตรฐานและตัวชี้วัดสำหรับการศึกษาปฐมวัย
+        </p>
 
-    </div>
+        <div class="grid grid-cols-3 gap-3 mb-5">
+          <div class="text-center bg-pink-50 rounded-lg py-2">
+            <p class="text-xl font-bold text-pink-600">{stats.early.standards}</p>
+            <p class="text-xs text-gray-500 mt-0.5">มาตรฐาน</p>
+          </div>
+          <div class="text-center bg-pink-50 rounded-lg py-2">
+            <p class="text-xl font-bold text-pink-600">{stats.early.indicators}</p>
+            <p class="text-xs text-gray-500 mt-0.5">ตัวชี้วัด</p>
+          </div>
+          <div class="text-center bg-pink-50 rounded-lg py-2">
+            <p class="text-xl font-bold text-green-600">{stats.early.documents}</p>
+            <p class="text-xs text-gray-500 mt-0.5">เอกสาร</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-semibold text-pink-600 group-hover:text-pink-700">
+            เข้าดูเอกสาร
+          </span>
+          <div class="w-8 h-8 rounded-full bg-pink-600 group-hover:bg-pink-700
+                      flex items-center justify-center transition-colors">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- หมายเหตุ -->
+  <div class="mt-6 flex items-start gap-2 text-xs text-gray-400">
+    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span>เอกสารทุกรายการเชื่อมโยงไปยัง Google Drive — คลิกที่เอกสารเพื่อเปิดดู</span>
   </div>
 
 </Layout>
