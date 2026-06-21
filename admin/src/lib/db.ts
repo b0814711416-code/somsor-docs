@@ -92,7 +92,9 @@ export async function getAllIndicators(): Promise<Indicator[]> {
     SELECT i.*, s.name AS standard_name
     FROM indicators i
     JOIN standards s ON s.id = i.standard_id
-    ORDER BY s.sort_order, i.sort_order, i.code
+    ORDER BY s.sort_order, i.sort_order,
+             CAST(SPLIT_PART(i.code, '.', 1) AS INTEGER),
+             CAST(SPLIT_PART(i.code, '.', 2) AS INTEGER)
   ` as Indicator[];
 }
 
@@ -144,7 +146,9 @@ export async function deleteIndicator(id: number): Promise<boolean> {
 export async function getIndicatorsByStandard(standardId: number): Promise<Indicator[]> {
   return await sql`
     SELECT * FROM indicators WHERE standard_id = ${standardId}
-    ORDER BY sort_order, code
+    ORDER BY sort_order,
+             CAST(SPLIT_PART(code, '.', 1) AS INTEGER),
+             CAST(SPLIT_PART(code, '.', 2) AS INTEGER)
   ` as Indicator[];
 }
 

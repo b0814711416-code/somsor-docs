@@ -91,7 +91,9 @@ export async function getFullDataByLevel(level: string) {
                  FROM documents d
                  WHERE d.indicator_id = i.id AND d.is_active = TRUE
                )
-             ) ORDER BY i.sort_order, i.code
+             ) ORDER BY i.sort_order,
+                        CAST(SPLIT_PART(i.code, '.', 1) AS INTEGER),
+                        CAST(SPLIT_PART(i.code, '.', 2) AS INTEGER)
            ) AS indicators
     FROM standards s
     LEFT JOIN indicators i ON i.standard_id = s.id
@@ -126,7 +128,9 @@ export async function getFullData() {
                  FROM documents d
                  WHERE d.indicator_id = i.id AND d.is_active = TRUE
                )
-             ) ORDER BY i.sort_order, i.code
+             ) ORDER BY i.sort_order,
+                        CAST(SPLIT_PART(i.code, '.', 1) AS INTEGER),
+                        CAST(SPLIT_PART(i.code, '.', 2) AS INTEGER)
            ) AS indicators
     FROM standards s
     LEFT JOIN indicators i ON i.standard_id = s.id
@@ -153,7 +157,9 @@ export async function getStandardByCode(code: string) {
     SELECT i.id, i.code, i.name, i.description
     FROM indicators i
     WHERE i.standard_id = ${standard.id}
-    ORDER BY i.sort_order, i.code
+    ORDER BY i.sort_order,
+             CAST(SPLIT_PART(i.code, '.', 1) AS INTEGER),
+             CAST(SPLIT_PART(i.code, '.', 2) AS INTEGER)
   ` as Indicator[];
 
   for (const indicator of indicators) {
