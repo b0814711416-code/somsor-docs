@@ -8,7 +8,7 @@ export default defineConfig({
   // เปลี่ยน YOUR_USERNAME เป็น GitHub username จริง เช่น 'school-admin'
   // เปลี่ยน somsor-docs เป็นชื่อ repo จริง (ถ้าตั้งชื่ออื่น)
   site: 'https://b0814711416-code.github.io',
-  base: '/somsor-docs',
+  base: '/somorsor-docs',
 
   output: 'static', // SSG — build เป็นไฟล์ HTML นิ่งๆ
 
