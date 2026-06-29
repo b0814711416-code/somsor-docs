@@ -8,16 +8,19 @@ const level      = Astro.url.searchParams.get('level') ?? 'basic';
 const isEarly    = level === 'early';
 const filterStd  = Astro.url.searchParams.get('standard') ?? '';
 const filterYear = Astro.url.searchParams.get('year') ?? '';
+const filterTag  = Astro.url.searchParams.get('tag') ?? '';
 const showInactive = Astro.url.searchParams.get('inactive') === '1';
 
 const levelDocs = documents.filter(d => (d.education_level || 'basic') === level);
 
 const levelStandards = standards.filter(s => s.education_level === level);
 const years = [...new Set(levelDocs.map(d => d.academic_year))].sort().reverse();
+const tagOptions = [...new Set(levelDocs.flatMap(d => d.tags ?? []))].sort();
 
 const filtered = levelDocs
   .filter(d => !filterStd  || d.standard_code === filterStd)
   .filter(d => !filterYear || d.academic_year === filterYear)
+  .filter(d => !filterTag  || (d.tags ?? []).includes(filterTag))
   .filter(d => showInactive ? true : d.is_active);
 ---
 
@@ -67,6 +70,12 @@ const filtered = levelDocs
         {years.map(y => <option value={y} selected={filterYear === y}>{y}</option>)}
       </select>
 
+      <select name="tag" onchange="this.form.submit()"
+              class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">ทุกป้ายกำกับ</option>
+        {tagOptions.map(t => <option value={t} selected={filterTag === t}>🏷️ {t}</option>)}
+      </select>
+
       <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
         <input type="checkbox" name="inactive" value="1" checked={showInactive}
                onchange="this.form.submit()" class="rounded"/>
@@ -107,6 +116,17 @@ const filtered = levelDocs
                    class="text-xs text-blue-500 hover:underline truncate block max-w-xs">
                   ดูเอกสาร ↗
                 </a>
+                {(doc.tags ?? []).length > 0 && (
+                  <div class="flex flex-wrap gap-1 mt-1.5 max-w-xs">
+                    {doc.tags.map(tag => (
+                      <a href={`/documents?level=${level}&tag=${encodeURIComponent(tag)}`}
+                         class="inline-flex items-center bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-700
+                                text-[11px] font-medium px-1.5 py-0.5 rounded-full transition-colors">
+                        🏷️ {tag}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </td>
               <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
                 <span class={`text-xs font-medium px-2 py-0.5 rounded-full

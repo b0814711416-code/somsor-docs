@@ -24,12 +24,35 @@ export interface Indicator {
 
 export interface Document {
   id: number; indicator_id: number; title: string; url: string;
-  academic_year: string; doc_type: string;
+  academic_year: string; doc_type: string; tags: string[];
   is_active: boolean; sort_order: number;
   created_at: string; updated_at: string;
   indicator_code?: string; indicator_name?: string;
   standard_code?: string; standard_name?: string;
   education_level?: string;
+}
+
+/**
+ * แปลง input (string คั่นด้วย comma หรือ array) → array ของ tag ที่สะอาด
+ * - ตัดช่องว่างหัวท้าย, ตัดค่าว่าง, ตัด tag ซ้ำ (case-insensitive)
+ */
+export function parseTags(input: unknown): string[] {
+  const raw = Array.isArray(input)
+    ? input
+    : typeof input === 'string'
+      ? input.split(',')
+      : [];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of raw) {
+    const tag = String(item).trim();
+    if (!tag) continue;
+    const key = tag.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(tag);
+  }
+  return result;
 }
 
 export interface AdminUser {
@@ -185,11 +208,13 @@ export async function getDocumentById(id: number): Promise<Document | null> {
 export async function createDocument(data: {
   indicator_id: number; title: string; url: string;
   academic_year: string; doc_type: string; sort_order: number;
+  tags?: string[];
 }): Promise<Document> {
   const rows = await sql`
-    INSERT INTO documents (indicator_id, title, url, academic_year, doc_type, sort_order)
+    INSERT INTO documents (indicator_id, title, url, academic_year, doc_type, sort_order, tags)
     VALUES (${data.indicator_id}, ${data.title}, ${data.url},
-            ${data.academic_year}, ${data.doc_type}, ${data.sort_order})
+            ${data.academic_year}, ${data.doc_type}, ${data.sort_order},
+            ${data.tags ?? []})
     RETURNING *
   ` as Document[];
   return rows[0];
@@ -198,7 +223,7 @@ export async function createDocument(data: {
 export async function updateDocument(id: number, data: {
   indicator_id?: number; title?: string; url?: string;
   academic_year?: string; doc_type?: string;
-  is_active?: boolean; sort_order?: number;
+  is_active?: boolean; sort_order?: number; tags?: string[];
 }): Promise<Document | null> {
   const rows = await sql`
     UPDATE documents
@@ -208,7 +233,8 @@ export async function updateDocument(id: number, data: {
         academic_year = COALESCE(${data.academic_year ?? null}, academic_year),
         doc_type      = COALESCE(${data.doc_type      ?? null}, doc_type),
         is_active     = COALESCE(${data.is_active     ?? null}, is_active),
-        sort_order    = COALESCE(${data.sort_order    ?? null}, sort_order)
+        sort_order    = COALESCE(${data.sort_order    ?? null}, sort_order),
+        tags          = COALESCE(${data.tags          ?? null}, tags)
     WHERE id = ${id}
     RETURNING *
   ` as Document[];
@@ -218,6 +244,17 @@ export async function updateDocument(id: number, data: {
 export async function deleteDocument(id: number): Promise<boolean> {
   const rows = await sql`DELETE FROM documents WHERE id = ${id} RETURNING id`;
   return rows.length > 0;
+}
+
+/** รายชื่อ tag ที่เคยใช้ทั้งหมด (เรียงตามตัวอักษร) — สำหรับ datalist แนะนำ/ตัวกรอง */
+export async function getAllTags(): Promise<string[]> {
+  const rows = await sql`
+    SELECT DISTINCT TRIM(tag) AS tag
+    FROM documents, UNNEST(tags) AS tag
+    WHERE TRIM(tag) <> ''
+    ORDER BY tag
+  ` as { tag: string }[];
+  return rows.map(r => r.tag);
 }
 
 // --------- Admin Users ---------

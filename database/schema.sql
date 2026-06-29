@@ -47,6 +47,7 @@ CREATE TABLE documents (
   url           TEXT          NOT NULL,          -- ลิงก์ Google Drive
   academic_year VARCHAR(10)   DEFAULT '2567',    -- ปีการศึกษา เช่น "2567", "2566"
   doc_type      VARCHAR(50)   DEFAULT 'เอกสาร', -- ประเภท: รายงาน / คำสั่ง / ภาพถ่าย / สถิติ
+  tags          TEXT[]        NOT NULL DEFAULT '{}', -- ป้ายกำกับ (tag) เช่น {"สมศ.","สำคัญ"}
   is_active     BOOLEAN       DEFAULT TRUE,       -- แสดง/ซ่อน
   sort_order    INTEGER       DEFAULT 0,
   created_at    TIMESTAMPTZ   DEFAULT NOW(),
@@ -73,6 +74,7 @@ CREATE INDEX idx_indicators_standard_id ON indicators(standard_id);
 CREATE INDEX idx_documents_indicator_id ON documents(indicator_id);
 CREATE INDEX idx_documents_academic_year ON documents(academic_year);
 CREATE INDEX idx_documents_is_active ON documents(is_active);
+CREATE INDEX idx_documents_tags ON documents USING GIN (tags);
 
 -- ============================================================
 -- Trigger: อัปเดต updated_at อัตโนมัติเมื่อแก้ไข documents

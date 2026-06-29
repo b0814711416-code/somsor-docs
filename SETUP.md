@@ -9,6 +9,8 @@
 2. สร้าง Project ใหม่ (เลือก Region: Singapore ap-southeast-1)
 3. ไปที่ **SQL Editor** วางและรันเนื้อหาจากไฟล์ `database/schema.sql`
 4. รันไฟล์ `database/seed.sql` (ข้อมูลตัวอย่าง)
+   - หากเป็นฐานข้อมูลเดิมที่ตั้งไว้ก่อนมีฟีเจอร์ tag ให้รัน `database/migration-tags.sql` เพิ่มเติม
+     (schema.sql ใหม่รวมคอลัมน์ `tags` ไว้แล้ว — migration ใช้เฉพาะกรณีอัปเกรดฐานข้อมูลเก่า)
 5. ไปที่ **Dashboard → Connection Details** → คัดลอก **Connection string**
    รูปแบบ: `postgresql://user:pass@ep-xxx.aws.neon.tech/neondb?sslmode=require`
 6. **ตั้งรหัสผ่าน Admin จริง:**

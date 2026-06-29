@@ -3,7 +3,7 @@
  * DELETE /api/documents/[id]  → ลบเอกสาร
  */
 import type { APIRoute } from 'astro';
-import { updateDocument, deleteDocument } from '../../../lib/db';
+import { updateDocument, deleteDocument, parseTags } from '../../../lib/db';
 
 export const PUT: APIRoute = async ({ params, request }) => {
   const id = Number(params.id);
@@ -27,6 +27,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     doc_type:      body.doc_type       || undefined,
     is_active:     body.is_active      !== undefined ? Boolean(body.is_active) : undefined,
     sort_order:    body.sort_order     !== undefined ? Number(body.sort_order) : undefined,
+    tags:          body.tags           !== undefined ? parseTags(body.tags) : undefined,
   });
 
   if (!updated) {

@@ -1,12 +1,14 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getAllIndicators, getAllStandards } from '../../lib/db';
+import { getAllIndicators, getAllStandards, getAllTags } from '../../lib/db';
 
 const level = Astro.url.searchParams.get('level') ?? 'basic';
 const isEarly = level === 'early';
 const levelLabel = isEarly ? 'ปฐมวัย' : 'การศึกษาขั้นพื้นฐาน';
 
-const [allIndicators, standards] = await Promise.all([getAllIndicators(), getAllStandards()]);
+const [allIndicators, standards, allTags] = await Promise.all([
+  getAllIndicators(), getAllStandards(), getAllTags(),
+]);
 
 const levelStdIds = new Set(
   standards.filter(s => s.education_level === level).map(s => s.id)
@@ -194,6 +196,24 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
           </div>
         </div>
 
+        <!-- ป้ายกำกับ (Tags) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            ป้ายกำกับ (Tag) <span class="text-gray-400 text-xs">(พิมพ์แล้วกด Enter หรือ , เพื่อเพิ่ม)</span>
+          </label>
+          <div id="tagBox"
+               class="flex flex-wrap items-center gap-2 px-2 py-1.5 border border-gray-300 rounded-lg
+                      bg-white focus-within:ring-2 focus-within:ring-blue-500 cursor-text">
+            <input type="text" id="tagInput" list="tagSuggestions" autocomplete="off"
+                   placeholder="เช่น สำคัญ, ตรวจแล้ว, รอบ 5"
+                   class="flex-1 min-w-[140px] outline-none text-sm py-1 bg-transparent"/>
+          </div>
+          <datalist id="tagSuggestions">
+            {allTags.map(t => <option value={t}/>)}
+          </datalist>
+          <p class="text-xs text-gray-400 mt-1">ใช้จัดกลุ่ม/ค้นหาเอกสารในภายหลัง</p>
+        </div>
+
         <!-- ลำดับ -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -254,6 +274,52 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
     let selectedFile = null;
     let uploadedUrl  = null;    // URL จาก Drive หลัง upload สำเร็จ
     let sourceMode   = 'upload'; // 'upload' | 'url'
+
+    // ---- Tag chip input ----
+    const tagBox   = document.getElementById('tagBox');
+    const tagInput = document.getElementById('tagInput');
+    let tags = [];
+
+    function renderTags() {
+      // ลบ chip เดิม (เก็บ input ไว้)
+      tagBox.querySelectorAll('.tag-chip').forEach(el => el.remove());
+      tags.forEach((tag, idx) => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip inline-flex items-center gap-1 bg-blue-100 text-blue-700 ' +
+                         'text-xs font-medium px-2 py-1 rounded-full';
+        const label = document.createElement('span');
+        label.textContent = tag;
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.textContent = '×';
+        x.className = 'text-blue-500 hover:text-blue-800 font-bold leading-none';
+        x.addEventListener('click', () => { tags.splice(idx, 1); renderTags(); });
+        chip.append(label, x);
+        tagBox.insertBefore(chip, tagInput);
+      });
+    }
+
+    function addTag(value) {
+      const tag = (value || '').trim();
+      if (!tag) return;
+      if (!tags.some(t => t.toLowerCase() === tag.toLowerCase())) tags.push(tag);
+      tagInput.value = '';
+      renderTags();
+    }
+
+    tagBox?.addEventListener('click', () => tagInput?.focus());
+    tagInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addTag(tagInput.value);
+      } else if (e.key === 'Backspace' && !tagInput.value && tags.length) {
+        tags.pop();
+        renderTags();
+      }
+    });
+    // เลือกจาก datalist (suggestion) แล้วเพิ่มอัตโนมัติ
+    tagInput?.addEventListener('change', () => { if (tagInput.value) addTag(tagInput.value); });
+    tagInput?.addEventListener('blur', () => addTag(tagInput.value));
 
     // ---- Toggle mode ----
     function setMode(mode) {
@@ -349,6 +415,7 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
       fd.append('doc_type', form.querySelector('[name="doc_type"]').value);
       fd.append('academic_year', form.querySelector('[name="academic_year"]').value);
       fd.append('sort_order', form.querySelector('[name="sort_order"]').value || '0');
+      fd.append('tags', tags.join(','));
 
       progressBar.style.width = '50%';
 
@@ -387,6 +454,7 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
           successMsg.querySelector('p').textContent = '✅ อัปโหลดและบันทึกเรียบร้อยแล้ว!';
           form.reset();
           clearFileState();
+          tags = []; renderTags();
           uploadSuccess.classList.add('hidden');
         } else {
           // กรอก URL เอง — ใช้ API เดิม
@@ -400,6 +468,7 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
               ...data,
               indicator_id: Number(data.indicator_id),
               sort_order:   Number(data.sort_order) || 0,
+              tags,
             }),
           });
           const json = await res.json();
@@ -407,6 +476,7 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
           successMsg.classList.remove('hidden');
           successMsg.querySelector('p').textContent = '✅ บันทึกเรียบร้อยแล้ว!';
           form.reset();
+          tags = []; renderTags();
         }
         successMsg.scrollIntoView({ behavior: 'smooth' });
 

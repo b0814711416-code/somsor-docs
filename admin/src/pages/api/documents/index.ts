@@ -3,7 +3,7 @@
  * POST /api/documents  → เพิ่มเอกสารใหม่
  */
 import type { APIRoute } from 'astro';
-import { getAllDocuments, createDocument } from '../../../lib/db';
+import { getAllDocuments, createDocument, parseTags } from '../../../lib/db';
 
 export const GET: APIRoute = async () => {
   const docs = await getAllDocuments();
@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Validate required fields
-  const { indicator_id, title, url, academic_year, doc_type, sort_order } = body;
+  const { indicator_id, title, url, academic_year, doc_type, sort_order, tags } = body;
   if (!indicator_id || !title?.trim() || !url?.trim()) {
     return new Response(JSON.stringify({ error: 'กรุณากรอก indicator_id, title และ url' }), {
       status: 400, headers: { 'Content-Type': 'application/json' },
@@ -42,6 +42,7 @@ export const POST: APIRoute = async ({ request }) => {
     academic_year: academic_year || '2567',
     doc_type: doc_type || 'เอกสาร',
     sort_order: Number(sort_order) || 0,
+    tags: parseTags(tags),
   });
 
   return new Response(JSON.stringify(doc), {

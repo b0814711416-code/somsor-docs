@@ -3,12 +3,13 @@
  * หน้าแก้ไขเอกสาร — /documents/[id]/edit
  */
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getDocumentById, getAllIndicators } from '../../../lib/db';
+import { getDocumentById, getAllIndicators, getAllTags } from '../../../lib/db';
 
 const id = Number(Astro.params.id);
-const [doc, indicators] = await Promise.all([
+const [doc, indicators, allTags] = await Promise.all([
   getDocumentById(id),
   getAllIndicators(),
+  getAllTags(),
 ]);
 
 if (!doc) return Astro.redirect('/documents');
@@ -94,6 +95,23 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
           </div>
         </div>
 
+        <!-- ป้ายกำกับ (Tags) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            ป้ายกำกับ (Tag) <span class="text-gray-400 text-xs">(พิมพ์แล้วกด Enter หรือ , เพื่อเพิ่ม)</span>
+          </label>
+          <div id="tagBox"
+               class="flex flex-wrap items-center gap-2 px-2 py-1.5 border border-gray-300 rounded-lg
+                      bg-white focus-within:ring-2 focus-within:ring-blue-500 cursor-text">
+            <input type="text" id="tagInput" list="tagSuggestions" autocomplete="off"
+                   placeholder="เช่น สำคัญ, ตรวจแล้ว, รอบ 5"
+                   class="flex-1 min-w-[140px] outline-none text-sm py-1 bg-transparent"/>
+          </div>
+          <datalist id="tagSuggestions">
+            {allTags.map(t => <option value={t}/>)}
+          </datalist>
+        </div>
+
         <div class="flex items-center gap-3">
           <div class="flex-1">
             <label class="block text-sm font-medium text-gray-700 mb-1">ลำดับการแสดงผล</label>
@@ -124,12 +142,57 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
     </div>
   </div>
 
-  <script define:vars={{ docId: doc.id }}>
+  <script define:vars={{ docId: doc.id, initialTags: doc.tags ?? [] }}>
     const form       = document.getElementById('editForm');
     const submitBtn  = document.getElementById('submitBtn');
     const successMsg = document.getElementById('successMsg');
     const errorMsg   = document.getElementById('errorMsg');
     const errorText  = document.getElementById('errorText');
+
+    // ---- Tag chip input ----
+    const tagBox   = document.getElementById('tagBox');
+    const tagInput = document.getElementById('tagInput');
+    let tags = Array.isArray(initialTags) ? [...initialTags] : [];
+
+    function renderTags() {
+      tagBox.querySelectorAll('.tag-chip').forEach(el => el.remove());
+      tags.forEach((tag, idx) => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip inline-flex items-center gap-1 bg-blue-100 text-blue-700 ' +
+                         'text-xs font-medium px-2 py-1 rounded-full';
+        const label = document.createElement('span');
+        label.textContent = tag;
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.textContent = '×';
+        x.className = 'text-blue-500 hover:text-blue-800 font-bold leading-none';
+        x.addEventListener('click', () => { tags.splice(idx, 1); renderTags(); });
+        chip.append(label, x);
+        tagBox.insertBefore(chip, tagInput);
+      });
+    }
+
+    function addTag(value) {
+      const tag = (value || '').trim();
+      if (!tag) return;
+      if (!tags.some(t => t.toLowerCase() === tag.toLowerCase())) tags.push(tag);
+      tagInput.value = '';
+      renderTags();
+    }
+
+    tagBox?.addEventListener('click', () => tagInput?.focus());
+    tagInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addTag(tagInput.value);
+      } else if (e.key === 'Backspace' && !tagInput.value && tags.length) {
+        tags.pop();
+        renderTags();
+      }
+    });
+    tagInput?.addEventListener('change', () => { if (tagInput.value) addTag(tagInput.value); });
+    tagInput?.addEventListener('blur', () => addTag(tagInput.value));
+    renderTags();
 
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -147,6 +210,7 @@ const years = [currentYear, currentYear - 1, currentYear - 2].map(String);
         academic_year: fd.get('academic_year'),
         sort_order:    Number(fd.get('sort_order')) || 0,
         is_active:     fd.get('is_active') === '1',
+        tags,
       };
 
       try {

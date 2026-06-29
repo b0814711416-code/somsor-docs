@@ -4,7 +4,7 @@
  * → อัปโหลดขึ้น Google Drive → บันทึก URL ลง DB → return document
  */
 import type { APIRoute } from 'astro';
-import { getIndicatorById, createDocument } from '../../../lib/db';
+import { getIndicatorById, createDocument, parseTags } from '../../../lib/db';
 import { uploadDocumentFile } from '../../../lib/google-drive';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -22,6 +22,7 @@ export const POST: APIRoute = async ({ request }) => {
   const academicYear = (formData.get('academic_year') as string) || '2567';
   const sortOrder = Number(formData.get('sort_order')) || 0;
   const title = (formData.get('title') as string)?.trim();
+  const tags = parseTags(formData.get('tags'));
 
   if (!file || file.size === 0) return json({ error: 'กรุณาเลือกไฟล์' }, 400);
   if (!indicatorId) return json({ error: 'กรุณาเลือกตัวชี้วัด' }, 400);
@@ -56,6 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
     academic_year: academicYear,
     doc_type: docType,
     sort_order: sortOrder,
+    tags,
   });
 
   return json({ ...doc, drive_file_id: fileId }, 201);
